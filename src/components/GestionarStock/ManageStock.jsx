@@ -15,7 +15,7 @@ function ManageStock() {
     const [selectedProveedor, setSelectedProveedor] = useState(null);
 
     const filteredCategories = categories.filter(cat => cat.categoria_activa === true);
-
+    const filteredProviders = proveedores.filter(prov => prov.proveedor_activo === true && prov.nombre_proveedor !== "proveedor_eliminado")
     const toggleModal = () => {
         setModalOpen(!modalOpen);
     };
@@ -38,7 +38,7 @@ function ManageStock() {
 
     useEffect(() => {
         if (!filteredCategories || filteredCategories.length === 0) return;
-        if (!proveedores || proveedores.length === 0) return;
+        if (!filteredProviders || filteredProviders.length === 0) return;
     }, [categories, proveedores]);
 
     const handleChange = (e) => {
@@ -175,7 +175,7 @@ function ManageStock() {
                         placeholder="Selecciona un proveedor"
                         style={{ margin: '1rem', width: "20%" }}
                     >
-                        {proveedores.map((proveedor) => (
+                        {filteredProviders.map((proveedor) => (
                             <Option key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
                                 {proveedor.nombre_proveedor}
                             </Option>
