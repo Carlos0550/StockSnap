@@ -19,6 +19,14 @@ function ViewStock() {
       await deleteProduct(id)
       setIsDeleting(false)
   }
+
+  const formatProviderText = (text) =>{
+    const formatText = text.split("_").map((word)=>{
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+
+    return formatText.join(" ")
+  }
   let data;
 
   if (products && products.length > 0) {
@@ -28,10 +36,10 @@ function ViewStock() {
       .map((product, index) => ({
         key: index.toString(),
         id_producto: product.id_producto,
-        proveedor: product.nombre_proveedor,
+        proveedor: formatProviderText(product.nombre_proveedor),
         categoria: product.nombre_categoria,
         nombre_producto: product.nombre_producto,
-        precio: product.precio_unitario,
+        precio: `$${product.precio_unitario}`,
         stock: product.stock
       }))
   }
@@ -39,6 +47,8 @@ function ViewStock() {
   const paginationConfig = {
     pageSize: 15
   }
+  
+  
   return (
     <>
 
