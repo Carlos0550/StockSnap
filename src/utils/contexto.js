@@ -192,34 +192,38 @@ export const AppContextProvider = ({ children }) => {
 
     const updateProduct = async(values) =>{
         const { id_categoria, id_producto, id_proveedor, nombre_producto, precio, proveedor, stock } = values
-        const hiddenMessage = message.loading("Actualizando...",0)
+        const { supressMessageUpdatingProducts } = values
+        const hiddenMessage = !supressMessageUpdatingProducts && message.loading("Actualizando...",0)
         try {
             const { error } = await supabase
-        .from("productos")
-        .update({
-            id_categoria: id_categoria,
-            id_proveedor: id_proveedor,
-            nombre_producto: nombre_producto,
-            precio_unitario: precio,
-            stock: stock
-        })
-        .eq("id_producto", id_producto)
+            .from("productos")
+            .update({
+                id_categoria: id_categoria,
+                id_proveedor: id_proveedor,
+                nombre_producto: nombre_producto,
+                precio_unitario: precio,
+                stock: stock
+            })
+            .eq("id_producto", id_producto)
         if (error) {
-            hiddenMessage()
+            if(!supressMessageUpdatingProducts) hiddenMessage()
             console.log(error)
             message.error("Hubo un error al actualizar el producto",3)
         }else{
-            hiddenMessage()
-            message.success("Producto actualizado!",3)
-            fetchProducts()
+            if(!supressMessageUpdatingProducts) hiddenMessage()
+                message.success("Producto actualizado!",3)
+                fetchProducts()
         }
         } catch (error) {
             console.log(error)
-            message.error("Hubo un error al actualizar el producto",3)
+            if(!supressMessageUpdatingProducts) hiddenMessage()
+
+            if (!supressMessageUpdatingProducts) message.error("Hubo un error al actualizar el producto",3)
         }
     }
 
     const deleteProduct = async(id) =>{
+        console.log("me ejecuto")
         try {
             const hiddenMessage = message.loading("Eliminando producto...",0)
             const response = await supabase
@@ -269,12 +273,32 @@ export const AppContextProvider = ({ children }) => {
             console.log(error)
         }
     }
+
+    const deleteProvider = async(id_proveedor)=>{
+        try {
+            const response = await supabase
+            .from("proveedores")
+            .delete()
+            .eq("id_proveedor", id_proveedor)
+
+            if (response.status === 204) {
+                message.success("Proveedor eliminado correctamente!", 3)
+                fetchProveedores()
+            }else{
+                message.error("Hubo un error al eliminar el proveedor ", 3)
+                console.log(response.error)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
     return (
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products,updateProduct,deleteProduct,
             insertCategories, categories, toggleCategories,
-            proveedores,toggleProviders
+            proveedores,toggleProviders, deleteProvider,
         }}>
             {children}
         </AppContext.Provider>
