@@ -1,0 +1,28 @@
+.header{
+    min-height: 60px;
+    background-color: #000000;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 15px;
+}
+.logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logo h1{
+    color: white;
+    margin: 0 auto;
+
+}
+
+.button-nav{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+}
+
+.button-nav button{
+    padding: .5rem;
+}
