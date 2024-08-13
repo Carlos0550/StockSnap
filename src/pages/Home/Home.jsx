@@ -24,11 +24,7 @@ function Home() {
     }
   }, [selectedOption]);
 
-  const renderLorem = () => {
-    return (
-      <p>"Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus fugiat architecto facilis exercitationem numquam obcaecati quo, ratione molestias ipsa! Fuga dignissimos praesentium quod quos, officia mollitia neque obcaecati assumenda aut!"</p>
-    )
-  }
+
   const componentMap = {
     "inicio": "",
     "stock": <ManageStock />,
@@ -36,18 +32,33 @@ function Home() {
     "ventas": <Empty/>,
     "másopciones": <Empty/>
   }
+
+  const [widthValue, setWidthValue] = useState(0)
+
+  useEffect(()=>{
+    const handleWidth = () =>{
+      setWidthValue(window.innerWidth)
+    }
+
+    window.addEventListener("resize", handleWidth)
+
+    return () =>{
+      window.removeEventListener("resize", handleWidth)
+    }
+  },[])
+
   return (
     <>
       <NavbarHome />
 
-      <div className='home__wrapper' style={{ padding, maxWidth: selectedOption !== "inicio" ? "100%" : "80%", minHeight: selectedOption !== "inicio" ? "100vh" : "15vh", marginTop: selectedOption !== "inicio" ? "0" : "1rem", borderRadius: selectedOption !== "inicio" ? "0 0 10px 10px" : "10px" }}>
+      <div className='home__wrapper' style={{ paddingTop: ".5rem", maxWidth: selectedOption !== "inicio" ? "100%" : widthValue < 768 ? "100%" : "80%", minHeight: selectedOption !== "inicio" ? "100vh" : "15vh", marginTop: selectedOption !== "inicio" ? "0" : widthValue < 768 ? "0" : "1rem", borderRadius: selectedOption !== "inicio" ? "0 0 10px 10px" : "10px" }}>
         <div className="hero">
           <h1>StockSnap - Gestión de inventario</h1>
           <div>
             <Segmented
               options={options}
               disabled={sistemLoading}
-              style={{fontSize: "clamp(1rem,1.3vw, 2rem)", maxWidth:"100%"}}
+              size={widthValue < 768 ? 'small' : 'large'}
               onChange={value => {
                 const valor = value.replaceAll(" ", "").toLowerCase();
                 setSelectedOption(valor);
@@ -75,7 +86,7 @@ function Home() {
           
 
         </div>
-        <div className={selectedOption !== "inicio" ? "animate-container" : "desanimate-container"}>
+        <div className={selectedOption !== "inicio" ? "animate-container" : "desanimate-container" || widthValue < 768 ? "animate-container" : "inherit"}>
             {showContent && (
               componentMap[selectedOption]
             )}
