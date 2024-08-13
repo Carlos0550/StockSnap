@@ -147,7 +147,7 @@ export const AppContextProvider = ({ children }) => {
             const hiddenMessage = message.loading("Preparando todo...", 0);
             messageShowRef.current = true;
 
-            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage),fetchProducts(hiddenMessage)]);
+            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage), fetchProducts(hiddenMessage)]);
 
             hiddenMessage();
             setSistemLoading(false);
@@ -190,58 +190,58 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const updateProduct = async(values) =>{
+    const updateProduct = async (values) => {
         const { id_categoria, id_producto, id_proveedor, nombre_producto, precio, proveedor, stock } = values
         const { supressMessageUpdatingProducts } = values
-        const hiddenMessage = !supressMessageUpdatingProducts && message.loading("Actualizando...",0)
+        const hiddenMessage = !supressMessageUpdatingProducts && message.loading("Actualizando...", 0)
         try {
             const { error } = await supabase
-            .from("productos")
-            .update({
-                id_categoria: id_categoria,
-                id_proveedor: id_proveedor,
-                nombre_producto: nombre_producto,
-                precio_unitario: precio,
-                stock: stock
-            })
-            .eq("id_producto", id_producto)
-        if (error) {
-            if(!supressMessageUpdatingProducts) hiddenMessage()
-            console.log(error)
-            message.error("Hubo un error al actualizar el producto",3)
-        }else{
-            if(!supressMessageUpdatingProducts) hiddenMessage()
-                message.success("Producto actualizado!",3)
+                .from("productos")
+                .update({
+                    id_categoria: id_categoria,
+                    id_proveedor: id_proveedor,
+                    nombre_producto: nombre_producto,
+                    precio_unitario: precio,
+                    stock: stock
+                })
+                .eq("id_producto", id_producto)
+            if (error) {
+                if (!supressMessageUpdatingProducts) hiddenMessage()
+                console.log(error)
+                message.error("Hubo un error al actualizar el producto", 3)
+            } else {
+                if (!supressMessageUpdatingProducts) hiddenMessage()
+                message.success("Producto actualizado!", 3)
                 fetchProducts()
-        }
+            }
         } catch (error) {
             console.log(error)
-            if(!supressMessageUpdatingProducts) hiddenMessage()
+            if (!supressMessageUpdatingProducts) hiddenMessage()
 
-            if (!supressMessageUpdatingProducts) message.error("Hubo un error al actualizar el producto",3)
+            if (!supressMessageUpdatingProducts) message.error("Hubo un error al actualizar el producto", 3)
         }
     }
 
-    const deleteProduct = async(id) =>{
+    const deleteProduct = async (id) => {
         console.log("me ejecuto")
         try {
-            const hiddenMessage = message.loading("Eliminando producto...",0)
+            const hiddenMessage = message.loading("Eliminando producto...", 0)
             const response = await supabase
-            .from("productos")
-            .delete()
-            .eq("id_producto", id)
-            if (response.status === 204 ) {
+                .from("productos")
+                .delete()
+                .eq("id_producto", id)
+            if (response.status === 204) {
                 hiddenMessage()
                 await fetchProducts()
-                message.success("Producto eliminado!",3)
+                message.success("Producto eliminado!", 3)
 
-            }else{
+            } else {
                 hiddenMessage()
-                message.error("Error al eliminar el producto",3)
+                message.error("Error al eliminar el producto", 3)
                 console.log(response.error)
             }
         } catch (error) {
-            message.error("Error al eliminar el producto",3)
+            message.error("Error al eliminar el producto", 3)
             console.log(error)
         }
     }
@@ -274,17 +274,42 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const deleteProvider = async(id_proveedor)=>{
+    const updateProvider = async(values) =>{
+        const {contacto} = values
+        try {
+            const { error } = await supabase
+            .from("proveedores")
+            .update({
+                nombre_proveedor: values.nombreProveedor,
+                contacto: JSON.stringify(contacto)
+            })
+            .eq("id_proveedor", values.id_proveedor)
+
+            if (error) {
+                console.log(error)
+                message.error("Hubo un error al actualizar la información del proveedor",3)
+            }else{
+                await fetchProveedores()
+                message.success("Proveedor actualizado!", 3)
+                
+            }
+        } catch (error) {
+            console.log(error)
+            message.error("Hubo un error al actualizar la información del proveedor",3)
+        }
+    }
+
+    const deleteProvider = async (id_proveedor) => {
         try {
             const response = await supabase
-            .from("proveedores")
-            .delete()
-            .eq("id_proveedor", id_proveedor)
+                .from("proveedores")
+                .delete()
+                .eq("id_proveedor", id_proveedor)
 
             if (response.status === 204) {
                 message.success("Proveedor eliminado correctamente!", 3)
                 fetchProveedores()
-            }else{
+            } else {
                 message.error("Hubo un error al eliminar el proveedor ", 3)
                 console.log(response.error)
             }
@@ -293,12 +318,39 @@ export const AppContextProvider = ({ children }) => {
         }
 
     }
+
+    const addProvider = async (values) => {
+        console.log(values)
+        try {
+            const { error } = await supabase
+                .from("proveedores")
+                .insert({
+                    nombre_proveedor: values.nombreProveedor,
+                    contacto: JSON.stringify(values.contacto)
+                })
+
+            if (error) {
+                message.error("Error al añadirun proveedor", 3)
+                message.info("Verifique la consola para más información")
+                console.log(error)
+                return;
+            }else{
+                message.success("Proveedor añadidocon éxito!")
+                fetchProveedores()
+                return;
+            }
+        } catch (error) {
+            message.error("Error al añadir un proveedor", 3)
+            message.info("Verifique la consola para más información")
+            console.log(error)
+        }
+    }
     return (
         <AppContext.Provider value={{
             sistemLoading,
-            insertProducts, products,updateProduct,deleteProduct,
+            insertProducts, products, updateProduct, deleteProduct,
             insertCategories, categories, toggleCategories,
-            proveedores,toggleProviders, deleteProvider,
+            proveedores, toggleProviders, deleteProvider, addProvider,updateProvider
         }}>
             {children}
         </AppContext.Provider>
