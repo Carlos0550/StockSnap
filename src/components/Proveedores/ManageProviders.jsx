@@ -20,7 +20,7 @@ function ManageProviders() {
   const Items = [
     {
       key: "1",
-      label: "Administrar/listar proveedores",
+      label: "Gestionar/listar proveedores",
       children: null,
     },
     {
@@ -37,6 +37,7 @@ function ManageProviders() {
         accordion
         activeKey={activeKey}
         onChange={(key) => setActiveKey(key)}
+       
       />
 
 
