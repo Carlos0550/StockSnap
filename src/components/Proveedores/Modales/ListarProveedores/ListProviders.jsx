@@ -1,17 +1,26 @@
-import { Button, Modal, Switch, Table, Space, message } from 'antd';
+import { Button, Modal, Switch, Table, Space, message, Popconfirm } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../../../utils/contexto';
 import { json } from 'react-router-dom';
 import { DeleteOutline, DrawOutlined } from '@mui/icons-material';
-
+import EditStock from '../EditarStock/EditProvider';
+import EditProvider from '../EditarStock/EditProvider';
 function ListProviders({ handleToggleModal }) {
   const [widthValue, setWidthValue] = useState(window.innerWidth);
   const { proveedores, toggleProviders, products,updateProduct, deleteProvider } = useAppContext()
   const [switchDisabled, setSwitchDisabled] = useState(null)
+  const [editProviderModal, setEditProviderModal] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState(null)
+
+  
+  const handleEditModal = (id_prov) =>{
+    setEditProviderModal(!editProviderModal)
+    setSelectedProvider(proveedores.find((prov)=> prov.id_proveedor === id_prov))
+  }
+
   const filteredProviders = proveedores.filter((prov)=> prov.nombre_proveedor !== "proveedor_eliminado")
 
-  const handleDeleteProducts = async(lastId) =>{
-    console.log(lastId)
+  const handleDeleteProvider = async(lastId) =>{
     const filteredProducts = products.filter((prod) => prod.id_proveedor === lastId);
     const id_proveedor_eliminado = proveedores.find((prov)=> prov.nombre_proveedor === "proveedor_eliminado")
     if (!id_proveedor_eliminado) {
@@ -98,6 +107,7 @@ function ListProviders({ handleToggleModal }) {
     pageSize: 10
   }
   return (
+    <>
     <Modal
       title="Administrar proveedores"
       open={true}
@@ -143,14 +153,26 @@ function ListProviders({ handleToggleModal }) {
                 style={{ backgroundColor: record.activo ? "green" : "#cccddd" }}
                 onChange={() => handleToggle(record.key, record.activo)}
               />
-              <Button type='primary' danger onClick={()=>handleDeleteProducts(record.id_proveedor)}><DeleteOutline/></Button>
-              <Button type='primary'><DrawOutlined/></Button>
+              <Popconfirm 
+              onConfirm={()=>handleDeleteProvider(record.id_proveedor)}
+              title="¿Esta seguro de eliminar esta categoria?"
+              description="Todos los productos asociados a esta categoria apareceran con el nombre de 'Categoria eliminada'"
+              cancelText="Cancelar"
+              okText="Eliminar"
+              okType='danger'
+              
+              >
+                <Button type='primary' danger ><DeleteOutline/></Button>
+              </Popconfirm>
+              <Button type='primary' onClick={()=>handleEditModal(record.id_proveedor)}><DrawOutlined/></Button>
             </Space>
           )}
         />
 
       </Table>
     </Modal>
+    {editProviderModal && <EditProvider closeModal={handleEditModal} selectedProvider={selectedProvider}/>}
+    </>
   )
 }
 
