@@ -1,14 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import "./manageStock.css";
-import { Button, Collapse, Divider, message, Select, Flex } from 'antd';
-import ManageCategories from './GestionarCategorias/ManageCategories';
+import { Button, Collapse, Divider, message, Select, Flex, Modal } from 'antd';
+import ManageCategories from '../Categorias/ManageCategories';
 import { useAppContext } from '../../utils/contexto';
-import ViewStock from './VerTodoStock/ViewStock';
-import ModalVisualizeProduct from './Modales/VerProductoFInal/ModalVisualizeProduct';
+import RevisionProductoModal from "./Modales/RevisionProducto/RevisionProductoModal"
+import ListAndManageStock from "./ListarYAdministrarStock/ListAndManageStock"
 const { Option } = Select;
 
+
+
 function ManageStock() {
+    const [widthValue, setWIdthValue] = useState(window.innerWidth)
+    useEffect(()=>{
+        const handleResize = () =>{
+            setWIdthValue(window.innerWidth)
+        }
+
+        window.addEventListener("resize", handleResize)
+
+        return (()=>{
+            window.removeEventListener("resize", handleResize)
+        })
+    },[])
+
+
+
     const [modalOpen, setModalOpen] = useState(false);
     const { categories, proveedores } = useAppContext();
     const [selectedCategory, setSelectedCategory] = useState(null); 
@@ -154,12 +171,12 @@ function ManageStock() {
                     ) : null
                 ))}
                 <Divider orientation='left'>Seleccione la categoría y el proveedor</Divider>
-                <div className="flex-cont">
+                <div className="flex-cont" style={{flexDirection: widthValue < 768 ? "column" : "row"}}>
                     <Select
                         value={selectedCategory}
                         onChange={handleCategoryChange}
                         placeholder="Selecciona una categoría"
-                        style={{ margin: '1rem', width: "20%" }}
+                        style={{ margin: '1rem', width: "100%" }}
                     >
                         {filteredCategories.map((category) => (
                             <Option key={category.id_categoria} value={category.id_categoria}>
@@ -173,7 +190,7 @@ function ManageStock() {
                         value={selectedProveedor}
                         onChange={handleProveedorChange}
                         placeholder="Selecciona un proveedor"
-                        style={{ margin: '1rem', width: "20%" }}
+                        style={{ margin: '1rem', width: "100%" }}
                     >
                         {filteredProviders.map((proveedor) => (
                             <Option key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
@@ -196,6 +213,38 @@ function ManageStock() {
         );
     };
 
+
+    const [openModalListStock, setOpenModalListStock] = useState(false)
+    const [keyValue, setKeyValue] = useState(null)
+
+    const toggleModalListStock = () => {
+        setOpenModalListStock(!openModalListStock)
+
+    }
+
+    useEffect(()=>{
+        if (keyValue && keyValue[0] === "3") {
+            setOpenModalListStock(true)
+            setKeyValue(null)
+        }
+    },[keyValue])
+    const RenderListStock = () =>{
+        return(
+            <>
+                <Modal
+                onCancel={toggleModalListStock}
+                open={true}
+                width={widthValue}
+                footer={[
+                    <Button type='primary' danger onClick={toggleModalListStock}>Cerrar</Button>
+                ]}
+                >
+                    <ListAndManageStock />
+                </Modal>
+            </>
+        )
+    }
+
     const Items = [
         {
             key: "1",
@@ -210,15 +259,20 @@ function ManageStock() {
         {
             key: "3", 
             label: "Gestionar stock",
-            children: <ViewStock />
+            children: null
         }
     ];
 
     return (
+        <>
         <div className='manager__stock-wrapper'>
-            <Collapse accordion items={Items} />
+            <Collapse accordion 
+            activeKey={keyValue}
+            onChange={(key)=> setKeyValue(key)}
+            
+            items={Items} />
             {modalOpen && (
-                <ModalVisualizeProduct 
+                <RevisionProductoModal 
                     closeModal={() => toggleModal()} 
                     product={values} 
                     capitalizeLabel={capitalizeLabel} 
@@ -230,6 +284,8 @@ function ManageStock() {
                 />
             )}
         </div>
+        {openModalListStock && RenderListStock()}
+        </>
     );
 }
 

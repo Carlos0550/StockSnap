@@ -18,7 +18,7 @@ function EditStockModal({closeModal,selectedStock}) {
     const filteredProviders = proveedores.filter((prov) => prov.nombre_proveedor !== "proveedor_eliminado" && prov.proveedor_activo === true)
     const [values, setValues] = useState({
         id_producto: selectedStock.id_producto,
-        proveedor: selectedStock.nombre_proveedor === "proveedor_eliminado" ? "" : selectedStock.nombre_proveedor && selectedStock.proveedor_activo === true,
+        proveedor: selectedStock.nombre_proveedor === "proveedor_eliminado" && selectedStock.proveedor_activo === true ? "" : selectedStock.nombre_proveedor,
         id_proveedor: selectedStock.id_proveedor,
         categoria: selectedStock.nombre_categoria,
         id_categoria: selectedStock.id_categoria,
@@ -26,6 +26,8 @@ function EditStockModal({closeModal,selectedStock}) {
         precio: selectedStock.precio_unitario,
         stock: selectedStock.stock
     })
+
+    console.log(values.categoria)
     const filteredCategories = categories.filter(cat => cat.categoria_activa === true)
 
     const handleChange = (key, value) => {

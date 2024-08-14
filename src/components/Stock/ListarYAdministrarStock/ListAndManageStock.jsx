@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 import { useAppContext } from '../../../utils/contexto'
-import { Button, Table, Input, Flex } from 'antd';
+import { Button, Table, Input, Flex, Popconfirm } from 'antd';
 import { DeleteOutline, Draw } from '@mui/icons-material';
 import EditStockModal from '../Modales/EditarStock/EditStockModal';
 const {Search} = Input
-function ViewStock() {
+function ListAndManageStock() {
   const { products,deleteProduct } = useAppContext()
   const [EditModalState, setEditModalState] = useState(false)
   const [selectedStock, setSelectedStock] = useState([])
-
+  const [searchText, setSearchText] = useState('')
   const toggleModalEdit = (key) =>{
-    setSelectedStock(products[key])
+    setSelectedStock(products.find((prod)=> prod.id_producto === key))
     setEditModalState(!EditModalState)
   }
   const [idDeleting, setIsDeleting] = useState(false)
@@ -32,12 +32,13 @@ function ViewStock() {
   if (products && products.length > 0) {
     data = products
       .slice()
+      .filter(prod => prod.nombre_producto.toLowerCase().includes(searchText.toLowerCase()))
       .sort((a, b) => a.id_producto - b.id_producto)
       .map((product, index) => ({
         key: index.toString(),
         id_producto: product.id_producto,
-        proveedor: formatProviderText(product.nombre_proveedor),
-        categoria: product.nombre_categoria,
+        proveedor: product.nombre_proveedor ==="proveedor_eliminado" ? "Proveedor desvinculado" : product.nombre_proveedor,
+        categoria: product.nombre_categoria === "categoria_eliminada" ? "Categoria desvinculada" : product.nombre_categoria,
         nombre_producto: product.nombre_producto,
         precio: `$${product.precio_unitario}`,
         stock: product.stock
@@ -45,7 +46,7 @@ function ViewStock() {
   }
 
   const paginationConfig = {
-    pageSize: 15
+    pageSize: 7
   }
   
   
@@ -53,7 +54,13 @@ function ViewStock() {
     <>
 
       <div className="tableStock__container">
-      <Table dataSource={data} pagination={paginationConfig}>
+        <Search
+        placeholder="Buscar un producto"
+        size="large"
+        onChange={(e)=> setSearchText(e.target.value)}
+        style={{marginTop: "2rem"}}
+        />
+      <Table dataSource={data} pagination={paginationConfig} scroll={{x:500}}>
         
         <Table.Column
           title="Nombre producto"
@@ -90,8 +97,18 @@ function ViewStock() {
           key="accion"
           render={(_, record)=>(
            <Flex gap="middle" wrap justify='center' align='center'>
-            <Button type='primary' danger disabled={idDeleting} onClick={()=> handleDeleteProduct(record.id_producto)}><DeleteOutline/></Button>
-            <Button onClick={()=>toggleModalEdit(record.key)} disabled={idDeleting}><Draw/></Button>
+            <Popconfirm 
+            cancelText="Cancelar"
+            okText="Eliminar"
+            okType='danger'
+            title= "¿Está seguro de eliminar este producto?"
+            description="Hacerlo lo eliminará definitivamente"
+            onConfirm={()=> handleDeleteProduct(record.id_producto)}
+            >
+            <Button type='primary' danger disabled={idDeleting}><DeleteOutline/></Button>
+
+            </Popconfirm>
+            <Button onClick={()=>toggleModalEdit(record.id_producto)} disabled={idDeleting}><Draw/></Button>
            </Flex>
             
           )}
@@ -104,4 +121,4 @@ function ViewStock() {
   )
 }
 
-export default ViewStock
+export default ListAndManageStock

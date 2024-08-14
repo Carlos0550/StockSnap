@@ -1,7 +1,7 @@
 import { TextField } from '@mui/material';
-import { Button, message } from 'antd';
+import { Button, message, Modal } from 'antd';
 import React, { Children, useEffect, useState } from 'react'
-import { useAppContext } from '../../../utils/contexto';
+import { useAppContext } from '../../utils/contexto';
 import { Collapse } from "antd"
 import TableCategories from './TableCategories';
 function ManageCategories() {
@@ -48,7 +48,10 @@ function ManageCategories() {
             setIsSaving(true)
             await insertCategories(values)
             setIsSaving(false)
-            setValues([])
+            setValues({
+                nombre_categoria: "",
+                descripcion: ""
+            })
         }
     }
 
@@ -90,11 +93,30 @@ function ManageCategories() {
         )
     }
 
+    const [activeKey, setActiveKey] = useState(null)
+    const [modalManageCategories, setModalManageCategories] = useState(false)
+    useEffect(() => {
+        if (activeKey && activeKey[0] === "2") {
+            setModalManageCategories(true)
+            setActiveKey(null)
+        }
+    },[activeKey])
+
+    const handleToggleModalManageCategories = () => {
+        setModalManageCategories(!modalManageCategories)
+    }
     const RenderListCategories = () => {
         return (
-            <>
-                <TableCategories/>
-            </>
+
+            <Modal
+                width={2000}
+                open={true}
+                onCancel={handleToggleModalManageCategories}
+                
+            >
+                <TableCategories />
+            </Modal>
+
         )
     }
 
@@ -106,12 +128,16 @@ function ManageCategories() {
         }, {
             key: "2",
             label: "Administrar Categorias",
-            children: RenderListCategories()
+            children: null
         }
     ]
     return (
         <>
-            <Collapse accordion items={Items} />
+            <Collapse accordion items={Items} 
+            activeKey={activeKey}
+            onChange={(key)=> setActiveKey(key)}
+            />
+            {modalManageCategories && RenderListCategories()}
         </>
     )
 }

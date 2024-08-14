@@ -3,7 +3,7 @@ import "./home.css";
 import NavbarHome from '../../components/NavBar-Home/NavbarHome';
 import { Empty, message, Segmented } from 'antd';
 
-import ManageStock from '../../components/GestionarStock/ManageStock';
+import ManageStock from '../../components/Stock/ManageStock';
 import { useAppContext } from '../../utils/contexto';
 import ManageProviders from '../../components/Proveedores/ManageProviders';
 function Home() {

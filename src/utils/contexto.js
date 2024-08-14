@@ -42,6 +42,50 @@ export const AppContextProvider = ({ children }) => {
 
     }
 
+    const deleteCategory = async (values = {}, categoryId) => {
+        const hiddenMessage = message.loading("Eliminando categoría", 0);
+        let hasError = false;
+      
+        try {
+          if (values ?.id_categoria) {
+            const { error: updateError } = await supabase
+              .from("productos")
+              .update({ id_categoria: values.id_categoria })
+              .eq("id_producto", values.id_producto);
+      
+            if (updateError) {
+              hasError = true;
+              console.log(updateError);
+            }
+          }
+      
+          if (!hasError && categoryId) {
+            const { status, error: deleteError } = await supabase
+              .from("categorias")
+              .delete()
+              .eq("id_categoria", categoryId);
+      
+            if (status !== 204 || deleteError) {
+              hasError = true;
+              console.log(deleteError);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+          hasError = true;
+        } finally {
+          hiddenMessage();
+          if (!hasError) {
+            message.success("Categoría eliminada");
+            fetchCategories()
+          } else {
+            message.error("Hubo un problema al eliminar la categoría");
+          }
+        }
+      };
+      
+      
+
     const insertProducts = async (products) => {
         const { nombre_producto, descripcion, stock, precio_unitario, proveedor, categoria } = products
         const hiddenMessage = message.loading("Guardando...", 0)
@@ -349,7 +393,7 @@ export const AppContextProvider = ({ children }) => {
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products, updateProduct, deleteProduct,
-            insertCategories, categories, toggleCategories,
+            insertCategories, categories, toggleCategories,deleteCategory,
             proveedores, toggleProviders, deleteProvider, addProvider,updateProvider
         }}>
             {children}

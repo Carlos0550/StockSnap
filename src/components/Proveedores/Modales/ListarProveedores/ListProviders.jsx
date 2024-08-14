@@ -156,7 +156,7 @@ function ListProviders({ handleToggleModal }) {
               <Popconfirm 
               onConfirm={()=>handleDeleteProvider(record.id_proveedor)}
               title="¿Esta seguro de eliminar esta categoria?"
-              description="Todos los productos asociados a esta categoria apareceran con el nombre de 'Categoria eliminada'"
+              description="Todos los productos asociados a esta categoria apareceran con el nombre de 'Proveedor eliminado'"
               cancelText="Cancelar"
               okText="Eliminar"
               okType='danger'
