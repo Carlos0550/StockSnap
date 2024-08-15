@@ -3,6 +3,7 @@ import { Button, Flex, Table, Input, message } from 'antd';
 import { useAppContext } from '../../utils/contexto';
 import { AddShoppingCartTwoTone, ShoppingCart } from '@mui/icons-material';
 import ModalAddToCart from './Modales/ModalAddToCart';
+import ViewCart from './Modales/ViewCart';
 
 const { Search } = Input;
 
@@ -11,7 +12,7 @@ function SalesManager() {
     const { stockForSales } = useAppContext();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openModalCart, setOpenModalCart] = useState(false);
-
+    const [openViewCart, setOpenViewCart] = useState(false)
     if (!stockForSales) {
         message.warning('No hay productos disponibles.');
         return null;
@@ -33,6 +34,10 @@ function SalesManager() {
         pageSize: 10,
     };
 
+    const handleViewCart = () =>{
+        setOpenViewCart(!openViewCart)
+    }
+
     const handleAddToCart = (idProd) => {
         const product = stockForSales.find(prod => prod.id_producto === idProd);
         if (product) {
@@ -52,7 +57,7 @@ function SalesManager() {
                     style={{ margin: "1rem", maxWidth: "35%" }}
                     size='large'
                 />
-                <Button style={{ marginTop: "1rem" }} size='large'>
+                <Button onClick={handleViewCart} style={{ marginTop: "1rem" }} size='large'>
                     Revisar <ShoppingCart />
                 </Button>
             </Flex>
@@ -94,6 +99,7 @@ function SalesManager() {
                 </Table>
             </Flex>
             {openModalCart && <ModalAddToCart closeModal={() => setOpenModalCart(false)} selectedProduct={selectedProduct} />}
+            {openViewCart && <ViewCart closeModal={handleViewCart}/>}
         </>
     );
 }
