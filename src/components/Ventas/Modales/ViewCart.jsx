@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Card, Row, Col, Flex, message, Result } from 'antd';
+import { Modal, Button, Card, Row, Col, Flex, message, Result, Spin } from 'antd';
 import { AddCardOutlined, CleaningServices, DoneAll, MoneyRounded, Print} from '@mui/icons-material';
 import { useAppContext } from '../../../utils/contexto';
 import "./Css/ViewCart.css"
@@ -7,7 +7,7 @@ import ResultSuccess from '../Resultados/ResultSuccess';
 const { Meta } = Card;
 
 function ViewCart({ closeModal }) {
-  const { cart,completeCashSale } = useAppContext();
+  const { cart,completeCashSale,purchaseSuccess, setPurchaseSuccess,setPurchaseFailed, purchaseFailed } = useAppContext();
 
   // Agrupa los productos de dos en dos
   const chunkedCart = [];
@@ -17,32 +17,24 @@ function ViewCart({ closeModal }) {
   let sumatoriaPrecio = cart.reduce((acc, product)=>  acc + (product.precio_unitario * product.quantity) ,0)
 
   const [processingPurchase, setProcessingPurchase] = useState(false)
-  const [purchaseFailed, setPurchaseFailed] = useState(false)
-  const [purchaseSuccess, setPurchaseSuccess] = useState(false)
+  
   const handleFinnalyPurchaseCash = async() =>{
     setProcessingPurchase(true)
     const response = await completeCashSale()
     setProcessingPurchase(false)
 
-
     if (response.code === 201) {
-        message.success("Compra en efectivo concretada con éxito")
-        closeModal()
-        setPurchaseSuccess(true)
-
-    }else{
-      message.error("Hubo un error al procesar la compra, por favor intente nuevamente",4)
-      setPurchaseFailed(true)
-
+      closeModal()
     }
   }
 
-  console.log(purchaseSuccess)
+  // console.log(purchaseSuccess ? "Deberia mostrar el estado de la compra" : "No esta mostrando el estado")
   return (
     <>
       <Modal
         open={true}
         onCancel={closeModal}
+        width={1200}
         footer={[
           <Button type='primary' onClick={closeModal} danger>Volver</Button>
         ]}
@@ -71,14 +63,14 @@ function ViewCart({ closeModal }) {
         <Card hoverable style={{width:"100%"}}>
                 <Meta 
                 title={(
-                    <h1>Total: ${sumatoriaPrecio}</h1>
+                    <h1>Total: ${sumatoriaPrecio.toFixed(2)}</h1>
                 )}
                 description={(
                     <>
                     <Flex gap="small" vertical>
-                    <Button type='primary' danger disabled={processingPurchase}>Limpiar carrito <CleaningServices/></Button>
-                    <Button type='primary' onClick={handleFinnalyPurchaseCash} disabled={processingPurchase}>Concretar venta en efectivo <MoneyRounded/></Button>
-                    <Button type='primary' disabled={processingPurchase}>Concretar venta Mercado Pago <AddCardOutlined/></Button>
+                      <Button type='primary'  danger disabled={processingPurchase || sumatoriaPrecio == 0}>Limpiar carrito <CleaningServices/></Button>
+                      <Button type='primary'  onClick={handleFinnalyPurchaseCash} disabled={processingPurchase || sumatoriaPrecio == 0}>{processingPurchase ? <Spin/> : (<>Concretar venta en efectivo <MoneyRounded/></>)}</Button>
+                      <Button type='primary'  disabled={processingPurchase || sumatoriaPrecio == 0}>Concretar venta Mercado Pago <AddCardOutlined/></Button>
                     </Flex>
 
                     </>
@@ -89,9 +81,7 @@ function ViewCart({ closeModal }) {
         </Flex>
       </Modal>
 
-      {purchaseSuccess && (
-        <ResultSuccess/>
-      )}
+      
     </>
   );
 }

@@ -1,7 +1,6 @@
 import { Button, message, Modal, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { Card, Col, Row, Flex, InputNumber } from 'antd';
-import { TextField } from '@mui/material';
 import { useAppContext } from '../../../utils/contexto';
 import { AddShoppingCartSharp } from '@mui/icons-material';
 const { Meta } = Card
@@ -55,7 +54,8 @@ function ModalAddToCart({ closeModal, selectedProduct }) {
                                 >
                                     {quantityValue > selectedProduct.stock ? "La cantidad supera el stock disponible" : (
                                             <>
-                                                Ingrese una cantidad no mayor a: <strong>{selectedProduct.stock}</strong>
+                                                Ingrese una cantidad no mayor a: <br/>
+                                                <strong>{selectedProduct.stock}</strong>
                                             </>
                                         )}
                                 </Tag>  
