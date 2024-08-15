@@ -1,0 +1,9 @@
+.products__cart-container{
+    max-height: 300px;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin: .3rem;
+}
+
