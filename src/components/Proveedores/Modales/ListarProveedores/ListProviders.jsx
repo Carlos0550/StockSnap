@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../../../utils/contexto';
 import { json } from 'react-router-dom';
 import { DeleteOutline, DrawOutlined } from '@mui/icons-material';
-import EditStock from '../EditarStock/EditProvider';
-import EditProvider from '../EditarStock/EditProvider';
+import EditStock from '../EditarStock/EditModalManager';
+import EditProvider from '../EditarStock/EditModalManager';
 function ListProviders({ handleToggleModal }) {
   const [widthValue, setWidthValue] = useState(window.innerWidth);
   const { proveedores, toggleProviders, products,updateProduct, deleteProvider } = useAppContext()
@@ -34,11 +34,10 @@ function ListProviders({ handleToggleModal }) {
       supressMessageUpdatingProducts:true
     }));
 
-    for (const product of updatedProducts) {
-      await updateProduct(product)
-      
+    const response = await updateProduct(updatedProducts)
+    if (response.code === 201) {
+      await deleteProvider(lastId)
     }
-    await deleteProvider(lastId)
   }
 
   useEffect(() => {
@@ -155,8 +154,8 @@ function ListProviders({ handleToggleModal }) {
               />
               <Popconfirm 
               onConfirm={()=>handleDeleteProvider(record.id_proveedor)}
-              title="¿Esta seguro de eliminar esta categoria?"
-              description="Todos los productos asociados a esta categoria apareceran con el nombre de 'Proveedor eliminado'"
+              title="¿Esta seguro de eliminar este proveedor?"
+              description="Todos los productos asociados a este proveedor apareceran con el nombre de 'Proveedor eliminado'"
               cancelText="Cancelar"
               okText="Eliminar"
               okType='danger'

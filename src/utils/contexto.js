@@ -15,107 +15,7 @@ export const AppContextProvider = ({ children }) => {
     const [categories, setCategories] = useState([])
     const [proveedores, setProveedores] = useState([])
     const [products, setProducts] = useState([])
-    const insertCategories = async (values) => {
-        const hiddenMessage = message.loading("Guardando...", 0)
-        try {
-            const { data, error } = await supabase
-                .from("categorias")
-                .insert({
-                    nombre_categoria: values.nombre_categoria,
-                    descripcion: values.descripcion
-                })
-
-            if (error) {
-                message.error("Hubo un problema al guardar la categoria", 2)
-                console.log(error)
-                return;
-            }
-            await fetchCategories()
-            hiddenMessage()
-            message.success("Categoria guardada", 2)
-        } catch (error) {
-            console.log(error)
-            hiddenMessage()
-            message.error("Hubo un problema al guardar la categoria", 2)
-
-        }
-
-    }
-
-    const deleteCategory = async (values = {}, categoryId) => {
-        const hiddenMessage = message.loading("Eliminando categoría", 0);
-        let hasError = false;
-      
-        try {
-          if (values ?.id_categoria) {
-            const { error: updateError } = await supabase
-              .from("productos")
-              .update({ id_categoria: values.id_categoria })
-              .eq("id_producto", values.id_producto);
-      
-            if (updateError) {
-              hasError = true;
-              console.log(updateError);
-            }
-          }
-      
-          if (!hasError && categoryId) {
-            const { status, error: deleteError } = await supabase
-              .from("categorias")
-              .delete()
-              .eq("id_categoria", categoryId);
-      
-            if (status !== 204 || deleteError) {
-              hasError = true;
-              console.log(deleteError);
-            }
-          }
-        } catch (error) {
-          console.log(error);
-          hasError = true;
-        } finally {
-          hiddenMessage();
-          if (!hasError) {
-            message.success("Categoría eliminada");
-            fetchCategories()
-          } else {
-            message.error("Hubo un problema al eliminar la categoría");
-          }
-        }
-      };
-      
-      
-
-    const insertProducts = async (products) => {
-        const { nombre_producto, descripcion, stock, precio_unitario, proveedor, categoria } = products
-        const hiddenMessage = message.loading("Guardando...", 0)
-
-        try {
-            const { data, error } = await supabase
-                .from("productos")
-                .insert({
-                    nombre_producto: nombre_producto,
-                    descripcion: descripcion,
-                    precio_unitario: parseFloat(precio_unitario),
-                    stock: parseInt(stock),
-                    id_categoria: categoria,
-                    id_proveedor: proveedor
-                })
-            if (error) {
-                message.error("Hubo un problema al guardar la categoria", 2)
-                console.log(error)
-                return;
-            }
-            hiddenMessage()
-            await fetchProducts()
-            message.success("Producto guardado", 2)
-
-        } catch (error) {
-            message.error("Hubo un problema al guardar la categoria", 2)
-            console.log(error)
-        }
-
-    }
+    const [stockForSales, setStockForSales] = useState([])
 
     const fetchCategories = async (hiddenMessage) => {
         try {
@@ -156,6 +56,7 @@ export const AppContextProvider = ({ children }) => {
                 setProveedores(dataProveedores);
             }
         } catch (error) {
+            hiddenMessage()
             message.error("Hubo un error al cargar los proveedores, por favor intente nuevamente", 3);
             console.log(error);
         }
@@ -182,6 +83,28 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+    const fetchStockForSales = async (hiddenMessage) => {
+        try {
+            const { data, error } = await supabase
+                .from("vista_stock_para_ventas")
+                .select()
+
+            if (error) {
+                console.log(error)
+                hiddenMessage()
+                message.error("Hubo un error al cargar el stock para la venta, por favor recarge la página!")
+            } else {
+                setStockForSales(data)
+            }
+
+        } catch (error) {
+            hiddenMessage()
+
+            console.log(error)
+            message.error("Hubo un error al cargar el stock para la venta, por favor recarge la página!")
+        }
+    }
+
     const messageShowRef = useRef(false)
     const [sistemLoading, setSistemLoading] = useState(false)
     useEffect(() => {
@@ -191,7 +114,7 @@ export const AppContextProvider = ({ children }) => {
             const hiddenMessage = message.loading("Preparando todo...", 0);
             messageShowRef.current = true;
 
-            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage), fetchProducts(hiddenMessage)]);
+            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage), fetchProducts(hiddenMessage), fetchStockForSales(hiddenMessage)]);
 
             hiddenMessage();
             setSistemLoading(false);
@@ -199,11 +122,33 @@ export const AppContextProvider = ({ children }) => {
         })();
     }, []);
 
-    // useEffect(()=>{
-    //     console.log("Categorias: ", categories)
-    //     console.log("Proveedores: ",proveedores)
-    //     console.log("Stock: ",products)       
-    // },[categories,proveedores, products])
+
+    const insertCategories = async (values) => {
+        const hiddenMessage = message.loading("Guardando...", 0)
+        try {
+            const { data, error } = await supabase
+                .from("categorias")
+                .insert({
+                    nombre_categoria: values.nombre_categoria,
+                    descripcion: values.descripcion
+                })
+
+            if (error) {
+                message.error("Hubo un problema al guardar la categoria", 2)
+                console.log(error)
+                return;
+            }
+            await fetchCategories()
+            hiddenMessage()
+            message.success("Categoria guardada", 2)
+        } catch (error) {
+            console.log(error)
+            hiddenMessage()
+            message.error("Hubo un problema al guardar la categoria", 2)
+
+        }
+
+    }
 
 
     const toggleCategories = async (id, currentState) => {
@@ -234,35 +179,152 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const updateProduct = async (values) => {
-        const { id_categoria, id_producto, id_proveedor, nombre_producto, precio, proveedor, stock } = values
-        const { supressMessageUpdatingProducts } = values
-        const hiddenMessage = !supressMessageUpdatingProducts && message.loading("Actualizando...", 0)
+    const updateCategory = async (values) => {
+        const { error } = await supabase
+            .from("categorias")
+            .update({
+                nombre_categoria: values.nombre_categoria,
+                descripcion: values.descripcion || ""
+            })
+            .eq("id_categoria", values.id_categoria)
+        if (!error) {
+            await fetchCategories()
+            message.success("Categoria actualizada!", 3)
+        } else {
+            message.error("Hubo un error al actualizar esta categoria", 3)
+        }
+
+    }
+
+    const deleteCategory = async (values = [], categoryId) => {
+        let hasError = false;
+        let isForeignKeyError = false;
+
+        for (let i = 0; i < values.length; i++) {
+            const product = values[i];
+            if (product?.id_categoria) {
+                try {
+                    const { error: updateError } = await supabase
+                        .from("productos")
+                        .update({ id_categoria: product.id_categoria })
+                        .eq("id_producto", product.id_producto);
+
+                    if (updateError) {
+                        hasError = true;
+                        console.log(updateError);
+                        break;  // Detener el bucle si ocurre un error de actualización
+                    }
+                } catch (error) {
+                    console.log(error);
+                    hasError = true;
+                    break;
+                }
+            }
+        }
+
         try {
-            const { error } = await supabase
-                .from("productos")
-                .update({
-                    id_categoria: id_categoria,
-                    id_proveedor: id_proveedor,
-                    nombre_producto: nombre_producto,
-                    precio_unitario: precio,
-                    stock: stock
-                })
-                .eq("id_producto", id_producto)
-            if (error) {
-                if (!supressMessageUpdatingProducts) hiddenMessage()
-                console.log(error)
-                message.error("Hubo un error al actualizar el producto", 3)
+            if (!hasError && categoryId) {
+                const { status, error: deleteError } = await supabase
+                    .from("categorias")
+                    .delete()
+                    .eq("id_categoria", categoryId);
+
+                if (status !== 204 || deleteError) {
+                    if (deleteError?.message.includes('foreign key')) {
+                        isForeignKeyError = true;
+                    }
+                    hasError = true;
+                    console.log(deleteError);
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            hasError = true;
+        } finally {
+            if (!hasError) {
+                message.success("Categoría eliminada");
+                fetchCategories();
+            } else if (isForeignKeyError) {
+                message.warning("No se pudo eliminar la categoría porque está vinculada a productos.");
             } else {
-                if (!supressMessageUpdatingProducts) hiddenMessage()
-                message.success("Producto actualizado!", 3)
-                fetchProducts()
+                message.error("Hubo un problema al eliminar la categoría.");
+            }
+        }
+    };
+
+
+    // useEffect(()=>{
+    //     console.log("Categorias: ", categories)
+    //     console.log("Proveedores: ",proveedores)
+    //     console.log("Stock: ",products)       
+    // },[categories,proveedores, products])
+
+    const insertProducts = async (products) => {
+        const { nombre_producto, descripcion, stock, precio_unitario, proveedor, categoria } = products
+        const hiddenMessage = message.loading("Guardando...", 0)
+
+        try {
+            const { data, error } = await supabase
+                .from("productos")
+                .insert({
+                    nombre_producto: nombre_producto,
+                    descripcion: descripcion,
+                    precio_unitario: parseFloat(precio_unitario),
+                    stock: parseInt(stock),
+                    id_categoria: categoria,
+                    id_proveedor: proveedor
+                })
+            if (error) {
+                message.error("Hubo un problema al guardar la categoria", 2)
+                console.log(error)
+                return;
+            }
+            hiddenMessage()
+            await fetchProducts()
+            message.success("Producto guardado", 2)
+
+        } catch (error) {
+            message.error("Hubo un problema al guardar la categoria", 2)
+            console.log(error)
+        }
+
+    }
+
+    const updateProduct = async (values = []) => {
+        let hasError = false
+
+        try {
+            if (values.length > 0) {
+                for (let i = 0; i < values.length; i++) {
+                    const element = values[i];
+                    const { error } = await supabase
+                        .from("productos")
+                        .update({
+                            id_categoria: element.id_categoria,
+                            id_proveedor: element.id_proveedor,
+                            nombre_producto: element.nombre_producto,
+                            precio_unitario: element.precio,
+                            stock: element.stock
+                        })
+                        .eq("id_producto", element.id_producto)
+                    if (error) {
+                        console.log(error)
+                        hasError = true
+                        message.error("Hubo un error al actualizar el producto", 3)
+                        break;
+                    }
+                }
+            }
+
+            if (hasError) {
+                return {code:500, message:"Algo salio mal y no se pudo completar la operación"}
+            }else{
+                await fetchProducts()
+                return {code:201, message: "Actualizacion exitosa!"}
             }
         } catch (error) {
             console.log(error)
-            if (!supressMessageUpdatingProducts) hiddenMessage()
-
-            if (!supressMessageUpdatingProducts) message.error("Hubo un error al actualizar el producto", 3)
+            return {code:500, message:"Algo salio mal y no se pudo completar la operación"}
         }
     }
 
@@ -289,6 +351,7 @@ export const AppContextProvider = ({ children }) => {
             console.log(error)
         }
     }
+
 
     const toggleProviders = async (id, currentState) => {
 
@@ -318,28 +381,28 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const updateProvider = async(values) =>{
-        const {contacto} = values
+    const updateProvider = async (values) => {
+        const { contacto } = values
         try {
             const { error } = await supabase
-            .from("proveedores")
-            .update({
-                nombre_proveedor: values.nombreProveedor,
-                contacto: JSON.stringify(contacto)
-            })
-            .eq("id_proveedor", values.id_proveedor)
+                .from("proveedores")
+                .update({
+                    nombre_proveedor: values.nombreProveedor,
+                    contacto: JSON.stringify(contacto)
+                })
+                .eq("id_proveedor", values.id_proveedor)
 
             if (error) {
                 console.log(error)
-                message.error("Hubo un error al actualizar la información del proveedor",3)
-            }else{
+                message.error("Hubo un error al actualizar la información del proveedor", 3)
+            } else {
                 await fetchProveedores()
                 message.success("Proveedor actualizado!", 3)
-                
+
             }
         } catch (error) {
             console.log(error)
-            message.error("Hubo un error al actualizar la información del proveedor",3)
+            message.error("Hubo un error al actualizar la información del proveedor", 3)
         }
     }
 
@@ -378,7 +441,7 @@ export const AppContextProvider = ({ children }) => {
                 message.info("Verifique la consola para más información")
                 console.log(error)
                 return;
-            }else{
+            } else {
                 message.success("Proveedor añadidocon éxito!")
                 fetchProveedores()
                 return;
@@ -393,8 +456,9 @@ export const AppContextProvider = ({ children }) => {
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products, updateProduct, deleteProduct,
-            insertCategories, categories, toggleCategories,deleteCategory,
-            proveedores, toggleProviders, deleteProvider, addProvider,updateProvider
+            insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
+            proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
+            stockForSales,
         }}>
             {children}
         </AppContext.Provider>

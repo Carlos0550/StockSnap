@@ -27,7 +27,6 @@ function EditStockModal({closeModal,selectedStock}) {
         stock: selectedStock.stock
     })
 
-    console.log(values.categoria)
     const filteredCategories = categories.filter(cat => cat.categoria_activa === true)
 
     const handleChange = (key, value) => {
@@ -83,7 +82,14 @@ function EditStockModal({closeModal,selectedStock}) {
         setErrors(newError)
         if (!hasError) {
            setIsUpdating(true)
-           await updateProduct(values)
+           const valuesArray = [values]
+           const response = await updateProduct(valuesArray)
+           if (response.code === 201) {
+            message.success("Producto actualizado",3)
+           }else{
+            message.error("Hubo un error al actualizar el producto", 3)
+
+           }
            setIsUpdating(false)
            closeModal()
         }

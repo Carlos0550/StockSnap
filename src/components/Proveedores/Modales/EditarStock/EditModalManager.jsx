@@ -1,7 +1,7 @@
 import { Button, Flex, Modal } from 'antd'
 import React from 'react'
 import AddProviders from '../../AñadirProveedor/AddProviders'
-function EditProvider({ closeModal,selectedProvider }) {
+function EditModalManager({ closeModal,selectedProvider }) {
   return (
     <>
       <Modal
@@ -21,4 +21,4 @@ function EditProvider({ closeModal,selectedProvider }) {
   )
 }
 
-export default EditProvider
+export default EditModalManager

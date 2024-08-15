@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../../utils/contexto';
-import { Switch, Table, Space, Button, Spin, Input } from 'antd';
-import { DeleteForever } from '@mui/icons-material';
+import { Switch, Table, Space, Button, Spin, Input, Flex, message } from 'antd';
+import { DeleteForever, DrawOutlined } from '@mui/icons-material';
 import { AudioOutlined } from '@ant-design/icons';
+import EditCategories from './Modales/EditarCategorias/EditCategories';
 
 const { Search } = Input;
 
@@ -12,17 +13,14 @@ function TableCategories() {
   const [switchDisabled, setSwitchDisabled] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [openEditCategory, setOpenEditCategory] = useState(false)
 
-
-
-  const suffix = () => (
-    <AudioOutlined
-      style={{
-        fontSize: "16px",
-        color: "#1677ff"
-      }}
-    />
-  );
+  const handleEditCategoryModal = (id_cat) =>{
+    const filteredCategory = categories.find((cat)=> cat.id_categoria === id_cat) 
+    setSelectedCategory(filteredCategory)
+    setOpenEditCategory(true)
+  }
 
   const handleDeleteCategory = async (id_category) => {
     const categoria_eliminada = categories.find(
@@ -38,17 +36,11 @@ function TableCategories() {
     }));
 
     setIsDeleting(true);
-    for (const category of updatedCategories) {
-      try {
-        await deleteCategory(category, id_category);
-      } catch (error) {
-        console.log(`Error al eliminar la categoría ${id_category}:`, error);
-        break;
-      }
-    }
-
-    await deleteCategory(null, id_category);
+    const hiddenMessage = message.loading("Eliminando...",0)
+    await deleteCategory(updatedCategories, id_category);
+    hiddenMessage()
     setIsDeleting(false);
+
   };
 
   const handleToggle = async (key, checked) => {
@@ -114,13 +106,18 @@ function TableCategories() {
                 style={{ backgroundColor: record.activo ? "green" : "#cccddd" }}
                 onChange={() => handleToggle(record.key, record.activo)}
               />
-              <Button onClick={() => handleDeleteCategory(record.idCategoria)} disabled={isDeleting}>
+              <Flex vertical gap="small">
+              <Button type='primary' danger onClick={() => handleDeleteCategory(record.idCategoria)} disabled={isDeleting}>
                 {isDeleting ? <Spin /> : <DeleteForever />}
               </Button>
+              <Button type='primary' onClick={()=>handleEditCategoryModal(record.idCategoria)}><DrawOutlined/></Button>
+              </Flex>
             </Space>
           )}
         />
       </Table>
+
+      {openEditCategory && <EditCategories closeModal={()=> setOpenEditCategory(false)} selectedCategory={selectedCategory} />}
     </>
   );
 }

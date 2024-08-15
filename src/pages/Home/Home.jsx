@@ -6,6 +6,7 @@ import { Empty, message, Segmented } from 'antd';
 import ManageStock from '../../components/Stock/ManageStock';
 import { useAppContext } from '../../utils/contexto';
 import ManageProviders from '../../components/Proveedores/ManageProviders';
+import SalesManager from '../../components/Ventas/SalesManager';
 function Home() {
   const options = ["Inicio", "Stock", "Proveedores", "Ventas", "Más opciones"];
   const [padding, setPadding] = useState('1rem');
@@ -29,7 +30,7 @@ function Home() {
     "inicio": "",
     "stock": <ManageStock />,
     "proveedores": <ManageProviders/>,
-    "ventas": <Empty/>,
+    "ventas": <SalesManager/>,
     "másopciones": <Empty/>
   }
 
