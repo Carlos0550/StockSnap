@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useEffect, useState, useRef } from "react"
 import { supabase } from "../supabase";
-import { message } from "antd";
+import { message, Result, Button, Modal } from "antd";
 export const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -18,9 +18,9 @@ export const AppContextProvider = ({ children }) => {
     const [stockForSales, setStockForSales] = useState([])
     const [cart, setCart] = useState([])
 
-    useEffect(()=>{
-        console.log(cart)
-    },[cart])
+    // useEffect(() => {
+    //     console.log(cart)
+    // }, [cart])
 
     const fetchCategories = async (hiddenMessage) => {
         try {
@@ -322,14 +322,14 @@ export const AppContextProvider = ({ children }) => {
             }
 
             if (hasError) {
-                return {code:500, message:"Algo salio mal y no se pudo completar la operación"}
-            }else{
+                return { code: 500, message: "Algo salio mal y no se pudo completar la operación" }
+            } else {
                 await fetchProducts()
-                return {code:201, message: "Actualizacion exitosa!"}
+                return { code: 201, message: "Actualizacion exitosa!" }
             }
         } catch (error) {
             console.log(error)
-            return {code:500, message:"Algo salio mal y no se pudo completar la operación"}
+            return { code: 500, message: "Algo salio mal y no se pudo completar la operación" }
         }
     }
 
@@ -457,27 +457,30 @@ export const AppContextProvider = ({ children }) => {
             console.log(error)
         }
     }
-
-    const completeCashSale = async()=>{
+    const [purchaseFailed, setPurchaseFailed] = useState(false)
+    const [purchaseSuccess, setPurchaseSuccess] = useState(false)
+    const completeCashSale = async () => {
         const fechaActual = new Date();
 
         const año = fechaActual.getFullYear();
         const mes = fechaActual.getMonth() + 1;
         const dia = fechaActual.getDate()
-        const {error} = await supabase
-        .from("ventas")
-        .insert({
-            fecha_venta: `${año}-${mes}-${dia}`,
-            total: 500,
-            metodo_pago: "efectivo",
-            detalle_venta: JSON.stringify(cart)
-        })
+        const { error } = await supabase
+            .from("ventas")
+            .insert({
+                fecha_venta: `${año}-${mes}-${dia}`,
+                total: 500,
+                metodo_pago: "efectivo",
+                detalle_venta: JSON.stringify(cart)
+            })
 
         if (error) {
-            return{code:500}
-        }else{
+            return { code: 500 }
+        } else {
+            setPurchaseSuccess(true)
+            message.success("Venta exitosa!")
             setCart([]);
-            return{code:201}
+            return { code: 201 }
         }
     }
     return (
@@ -486,9 +489,25 @@ export const AppContextProvider = ({ children }) => {
             insertProducts, products, updateProduct, deleteProduct,
             insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
-            stockForSales,setCart, cart,completeCashSale
+            stockForSales, setCart, cart, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed
         }}>
             {children}
+            {purchaseSuccess && (
+                <Modal
+                    open={true}
+                    onCancel={() => setPurchaseSuccess(false)}
+                    footer={[]}
+                >
+                    <Result
+                        status="success"
+                        title="Compra en efectivo realizada con exito!"
+                        subTitle="Puede imprimir este comprobante de compra ahora o hacerlo mas tarde en más opciones -> Historial de ventas"
+                        extra={[
+                            <Button type="primary" onClick={() => setPurchaseSuccess(false)}>Terminar venta</Button>
+                        ]}
+                    />
+                </Modal>
+            )}
         </AppContext.Provider>
     )
 } 
