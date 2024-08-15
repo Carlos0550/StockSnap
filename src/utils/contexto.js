@@ -464,7 +464,7 @@ export const AppContextProvider = ({ children }) => {
         const año = fechaActual.getFullYear();
         const mes = fechaActual.getMonth() + 1;
         const dia = fechaActual.getDate()
-        const {data,error} = await supabase
+        const {error} = await supabase
         .from("ventas")
         .insert({
             fecha_venta: `${año}-${mes}-${dia}`,
@@ -474,10 +474,10 @@ export const AppContextProvider = ({ children }) => {
         })
 
         if (error) {
-            message.error("No se pudo concretar la venta")
-            console.log(error)
+            return{code:500}
         }else{
-            message.success("Venta en efectivo concretada")
+            setCart([]);
+            return{code:201}
         }
     }
     return (
