@@ -16,6 +16,11 @@ export const AppContextProvider = ({ children }) => {
     const [proveedores, setProveedores] = useState([])
     const [products, setProducts] = useState([])
     const [stockForSales, setStockForSales] = useState([])
+    const [cart, setCart] = useState([])
+
+    useEffect(()=>{
+        console.log(cart)
+    },[cart])
 
     const fetchCategories = async (hiddenMessage) => {
         try {
@@ -452,13 +457,36 @@ export const AppContextProvider = ({ children }) => {
             console.log(error)
         }
     }
+
+    const completeCashSale = async()=>{
+        const fechaActual = new Date();
+
+        const año = fechaActual.getFullYear();
+        const mes = fechaActual.getMonth() + 1;
+        const dia = fechaActual.getDate()
+        const {data,error} = await supabase
+        .from("ventas")
+        .insert({
+            fecha_venta: `${año}-${mes}-${dia}`,
+            total: 500,
+            metodo_pago: "efectivo",
+            detalle_venta: JSON.stringify(cart)
+        })
+
+        if (error) {
+            message.error("No se pudo concretar la venta")
+            console.log(error)
+        }else{
+            message.success("Venta en efectivo concretada")
+        }
+    }
     return (
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products, updateProduct, deleteProduct,
             insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
-            stockForSales,
+            stockForSales,setCart, cart,completeCashSale
         }}>
             {children}
         </AppContext.Provider>
