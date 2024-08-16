@@ -1,6 +1,7 @@
 import React, { useContext, createContext, useEffect, useState, useRef } from "react"
 import { supabase } from "../supabase";
 import { message, Result, Button, Modal } from "antd";
+import { HideImage } from "@mui/icons-material";
 export const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -143,7 +144,12 @@ export const AppContextProvider = ({ children }) => {
                 console.log(error)
                 return;
             }
-            await fetchCategories()
+            await Promise.all([
+                fetchCategories(hiddenMessage),
+                fetchProveedores(hiddenMessage),
+                fetchProducts(hiddenMessage),
+                fetchStockForSales(hiddenMessage),
+            ]);
             hiddenMessage()
             message.success("Categoria guardada", 2)
         } catch (error) {
@@ -185,6 +191,7 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const updateCategory = async (values) => {
+        const hiddenMessage = message.loading("Aguarde...",0)
         const { error } = await supabase
             .from("categorias")
             .update({
@@ -193,7 +200,13 @@ export const AppContextProvider = ({ children }) => {
             })
             .eq("id_categoria", values.id_categoria)
         if (!error) {
-            await fetchCategories()
+            await Promise.all([
+                fetchCategories(hiddenMessage),
+                fetchProveedores(hiddenMessage),
+                fetchProducts(hiddenMessage),
+                fetchStockForSales(hiddenMessage),
+            ]);
+            hiddenMessage()
             message.success("Categoria actualizada!", 3)
         } else {
             message.error("Hubo un error al actualizar esta categoria", 3)
@@ -204,6 +217,7 @@ export const AppContextProvider = ({ children }) => {
     const deleteCategory = async (values = [], categoryId) => {
         let hasError = false;
         let isForeignKeyError = false;
+        const hiddenMessage = message.loading("Aguarde...",0)
 
         for (let i = 0; i < values.length; i++) {
             const product = values[i];
@@ -241,22 +255,28 @@ export const AppContextProvider = ({ children }) => {
                     hasError = true;
                     console.log(deleteError);
                 }
-                await fetchCategories()
-                await fetchProducts()
+                await Promise.all([
+                    fetchCategories(hiddenMessage),
+                    fetchProveedores(hiddenMessage),
+                    fetchProducts(hiddenMessage),
+                    fetchStockForSales(hiddenMessage),
+                ]);
+
+                hiddenMessage()
+
+                if (!hasError) {
+                    message.success("Categoría eliminada");
+                    fetchCategories();
+                } else if (isForeignKeyError) {
+                    message.warning("No se pudo eliminar la categoría porque está vinculada a productos.");
+                } else {
+                    message.error("Hubo un problema al eliminar la categoría.");
+                }
             }
         } catch (error) {
             console.log(error);
             hasError = true;
-        } finally {
-            if (!hasError) {
-                message.success("Categoría eliminada");
-                fetchCategories();
-            } else if (isForeignKeyError) {
-                message.warning("No se pudo eliminar la categoría porque está vinculada a productos.");
-            } else {
-                message.error("Hubo un problema al eliminar la categoría.");
-            }
-        }
+        } 
     };
 
 
@@ -287,7 +307,12 @@ export const AppContextProvider = ({ children }) => {
                 return;
             }
             hiddenMessage()
-            await fetchProducts()
+            await Promise.all([
+                fetchCategories(hiddenMessage),
+                fetchProveedores(hiddenMessage),
+                fetchProducts(hiddenMessage),
+                fetchStockForSales(hiddenMessage),
+            ]);
             message.success("Producto guardado", 2)
 
         } catch (error) {
@@ -299,6 +324,7 @@ export const AppContextProvider = ({ children }) => {
 
     const updateProduct = async (values = []) => {
         let hasError = false
+        const hiddenMessage = message.loading("Aguarde...",0)
 
         try {
             if (values.length > 0) {
@@ -326,7 +352,13 @@ export const AppContextProvider = ({ children }) => {
             if (hasError) {
                 return { code: 500, message: "Algo salio mal y no se pudo completar la operación" }
             } else {
-                await fetchProducts()
+                await Promise.all([
+                    fetchCategories(),
+                    fetchProveedores(),
+                    fetchProducts(),
+                    fetchStockForSales(),
+                ]);
+                hiddenMessage()
                 return { code: 201, message: "Actualizacion exitosa!" }
             }
         } catch (error) {
@@ -345,7 +377,12 @@ export const AppContextProvider = ({ children }) => {
                 .eq("id_producto", id)
             if (response.status === 204) {
                 hiddenMessage()
-                await fetchProducts()
+                await Promise.all([
+                    fetchCategories(hiddenMessage),
+                    fetchProveedores(hiddenMessage),
+                    fetchProducts(hiddenMessage),
+                    fetchStockForSales(hiddenMessage),
+                ]);
                 message.success("Producto eliminado!", 3)
 
             } else {
@@ -390,6 +427,8 @@ export const AppContextProvider = ({ children }) => {
 
     const updateProvider = async (values) => {
         const { contacto } = values
+        const hiddenMessage = message.loading("Aguarde...",0)
+
         try {
             const { error } = await supabase
                 .from("proveedores")
@@ -403,7 +442,14 @@ export const AppContextProvider = ({ children }) => {
                 console.log(error)
                 message.error("Hubo un error al actualizar la información del proveedor", 3)
             } else {
-                await fetchProveedores()
+                await Promise.all([
+                    fetchCategories(hiddenMessage),
+                    fetchProveedores(hiddenMessage),
+                    fetchProducts(hiddenMessage),
+                    fetchStockForSales(hiddenMessage),
+                ]);
+                hiddenMessage()
+
                 message.success("Proveedor actualizado!", 3)
 
             }
@@ -414,6 +460,8 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const deleteProvider = async (id_proveedor) => {
+        const hiddenMessage = message.loading("Aguarde...",0)
+
         try {
             const response = await supabase
                 .from("proveedores")
@@ -422,8 +470,13 @@ export const AppContextProvider = ({ children }) => {
 
             if (response.status === 204) {
                 message.success("Proveedor eliminado correctamente!", 3)
-                await fetchProveedores()
-                await fetchProducts()
+                await Promise.all([
+                    fetchCategories(hiddenMessage),
+                    fetchProveedores(hiddenMessage),
+                    fetchProducts(hiddenMessage),
+                    fetchStockForSales(hiddenMessage),
+                ]);
+                hiddenMessage()
 
             } else {
                 message.error("Hubo un error al eliminar el proveedor ", 3)
@@ -451,7 +504,7 @@ export const AppContextProvider = ({ children }) => {
                 console.log(error)
                 return;
             } else {
-                message.success("Proveedor añadidocon éxito!")
+                message.success("Proveedor añadido con éxito!")
                 fetchProveedores()
                 return;
             }
@@ -487,13 +540,50 @@ export const AppContextProvider = ({ children }) => {
             return { code: 201 }
         }
     }
+
+    const updateStockInDb = async (values = []) => {
+        const hiddenMessage = message.loading("Aguarde...", 0);
+        try {
+            for (let i = 0; i < values.length; i++) {
+                const element = values[i];
+                const { error } = await supabase
+                    .from("productos")
+                    .update({
+                        stock: element.stock,
+                    })
+                    .eq("id_producto", element.id_producto);
+    
+                if (error) {
+                    console.log("Error actualizando producto:", error);
+                    throw new Error("Error actualizando producto");
+                }
+            }
+    
+            await Promise.all([
+                fetchCategories(hiddenMessage),
+                fetchProveedores(hiddenMessage),
+                fetchProducts(hiddenMessage),
+                fetchStockForSales(hiddenMessage),
+            ]);
+    
+            // setPurchaseSuccess(false);
+            message.success("Stock actualizado exitosamente");
+            return { code: 201 };
+        } catch (error) {
+            console.log("Error global:", error);
+            message.error("Hubo un error actualizando el stock.");
+        } finally {
+            hiddenMessage();
+        }
+    };
+    
     return (
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products, updateProduct, deleteProduct,
             insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
-            stockForSales, setCart, cart, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed
+            stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed,updateStockInDb
         }}>
             {children}
             {purchaseSuccess && (
@@ -507,7 +597,7 @@ export const AppContextProvider = ({ children }) => {
                         title="Compra en efectivo realizada con exito!"
                         subTitle="Puede imprimir este comprobante de compra ahora o hacerlo mas tarde en más opciones -> Historial de ventas"
                         extra={[
-                            <Button type="primary" onClick={() => setPurchaseSuccess(false)}>Terminar venta</Button>
+                            <Button type="primary" onClick={()=>setPurchaseSuccess(false)}>Terminar venta</Button>
                         ]}
                     />
                 </Modal>
