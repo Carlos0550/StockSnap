@@ -5,42 +5,41 @@ import { useAppContext } from '../../../utils/contexto';
 import { AddShoppingCartSharp } from '@mui/icons-material';
 const { Meta } = Card;
 
-function ModalAddToCart({ closeModal, selectedProduct,updateStockInGlobalState }) {
+function ModalAddToCart({ closeModal, selectedProduct, updateStockInGlobalState }) {
     const [quantityValue, setQuantityValue] = useState(1);
     const { setCart, cart } = useAppContext();
-
+    const [errorStock, setErrorStock] = useState(false);
     const onChange = (value) => {
         setQuantityValue(value);
     };
 
+    useEffect(() => {
+        setErrorStock(quantityValue > selectedProduct.stock);
+    }, [quantityValue, selectedProduct.stock]);
+
     const handleAddToCart = () => {
-        const prevCart = [...cart];
-        const id_itemToAdd = selectedProduct.id_producto;
-        const existingItem = prevCart.find(item => item.id_producto === id_itemToAdd);
-
-        const actualStock = selectedProduct.stock;
-
-        if (quantityValue > actualStock) {
-            message.error("La cantidad seleccionada supera el stock disponible.");
+        if (errorStock) {
+            message.error("La cantidad seleccionada es mayor al del stock", 3);
             return;
         }
+        
+        const prevCart = [...cart];
+        const existingItem = prevCart.find(item => item.id_producto === selectedProduct.id_producto);
+        // const newStock = selectedProduct.stock - quantityValue;
 
         if (existingItem) {
-            existingItem.quantity += quantityValue;
-            existingItem.stock -= quantityValue;
+            existingItem.quantity = quantityValue;
+            // existingItem.stock = newStock;
         } else {
             prevCart.push({
                 ...selectedProduct,
                 quantity: quantityValue,
-                stock: actualStock - quantityValue
+                // stock: newStock
             });
         }
 
         setCart(prevCart);
-
-        // Actualizamos el stock en el estado global
-        updateStockInGlobalState(selectedProduct.id_producto, actualStock - quantityValue);
-
+        // updateStockInGlobalState(selectedProduct.id_producto, newStock);
         message.success(`${selectedProduct.nombre_producto} añadido!`);
         closeModal();
     };
@@ -62,11 +61,11 @@ function ModalAddToCart({ closeModal, selectedProduct,updateStockInGlobalState }
                         description={(
                             <>
                                 <Tag
-                                    color={quantityValue > selectedProduct.stock ? 'red' : 'green'}
+                                    color={errorStock ? 'red' : 'green'}
                                     style={{ fontSize: "1rem", marginTop: "1rem", marginBottom: "1rem" }}
                                 >
-                                    {quantityValue > selectedProduct.stock
-                                        ? "La cantidad supera el stock disponible"
+                                    {errorStock
+                                        ? `La cantidad supera el stock disponible: ${selectedProduct.stock}`
                                         : `Stock disponible: ${selectedProduct.stock}`
                                     }
                                 </Tag>
@@ -74,17 +73,16 @@ function ModalAddToCart({ closeModal, selectedProduct,updateStockInGlobalState }
                                     <Col span={12}>
                                         <InputNumber
                                             min={1}
-                                            max={selectedProduct.stock}
-                                            value={quantityValue}
                                             onChange={onChange}
                                             style={{ width: '100%' }}
-                                            status={quantityValue > selectedProduct.stock ? "error" : ""}
+                                            value={quantityValue}
+                                            status={errorStock ? 'error' : ''}
                                         />
                                     </Col>
                                     <Button
                                         type='primary'
                                         onClick={handleAddToCart}
-                                        disabled={quantityValue > selectedProduct.stock}
+                                        disabled={errorStock}
                                     >
                                         Añadir al carrito <AddShoppingCartSharp />
                                     </Button>

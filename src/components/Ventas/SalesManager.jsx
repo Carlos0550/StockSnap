@@ -1,25 +1,39 @@
 import React, { useState } from 'react';
-import { Button, Flex, Table, Input, message } from 'antd';
+import { Button, Flex, Table, Input, message, Select } from 'antd';
 import { useAppContext } from '../../utils/contexto';
 import { AddShoppingCartTwoTone, ShoppingCart } from '@mui/icons-material';
 import ModalAddToCart from './Modales/ModalAddToCart';
 import ViewCart from './Modales/ViewCart';
 
 const { Search } = Input;
-
+const { Option } = Select
 function SalesManager() {
     const [searchText, setSearchText] = useState('');
-    const { stockForSales,setStockForSales } = useAppContext();
+    const { stockForSales, setStockForSales, categories, proveedores } = useAppContext();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openModalCart, setOpenModalCart] = useState(false);
     const [openViewCart, setOpenViewCart] = useState(false)
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedProvider, setSelectedProvider] = useState(null);
+
     if (!stockForSales) {
         message.warning('No hay productos disponibles.');
         return null;
     }
 
     const filteredData = stockForSales
-        .filter(prod => prod.nombre_producto.toLowerCase().includes(searchText.toLowerCase()))
+    .filter(prod => {
+        // Filtrar por nombre de producto
+        const matchesSearchText = prod.nombre_producto.toLowerCase().includes(searchText.toLowerCase());
+
+        // Filtrar por categoría si está seleccionada
+        const matchesCategory = selectedCategory ? prod.id_categoria === selectedCategory : true;
+
+        // Filtrar por proveedor si está seleccionado
+        const matchesProvider = selectedProvider ? prod.id_proveedor === selectedProvider : true;
+
+        return matchesSearchText && matchesCategory && matchesProvider;
+    })
         .sort((a, b) => a.id_producto - b.id_producto)
         .map(product => ({
             idCategoria: product.id_categoria,
@@ -34,7 +48,7 @@ function SalesManager() {
         pageSize: 10,
     };
 
-    const handleViewCart = () =>{
+    const handleViewCart = () => {
         setOpenViewCart(!openViewCart)
     }
 
@@ -48,10 +62,10 @@ function SalesManager() {
         }
     };
 
-    const updateStockInGlobalState = (idProducto, newStock) =>{
-        const updatedStock = stockForSales.map(prod =>{
+    const updateStockInGlobalState = (idProducto, newStock) => {
+        const updatedStock = stockForSales.map(prod => {
             if (prod.id_producto === idProducto) {
-                return {...prod, stock: newStock}
+                return { ...prod, stock: newStock }
             }
             return prod
         });
@@ -60,17 +74,32 @@ function SalesManager() {
 
     return (
         <>
-            <Flex wrap>
-                <Search
+            <Search
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder='Buscar un producto'
                     style={{ margin: "1rem", maxWidth: "35%" }}
                     size='large'
                 />
+            <Flex gap="middle">
+                    
+
+                    Filtrar por categoría
+                    <Select
+                        style={{ width: "200px" }}
+                        onChange={(value) => setSelectedCategory(value)}
+                        placeholder="Seleccionar categoría"
+                    >
+                        <Option value={null}>Todas las categorias</Option>
+                        {categories.map((cat) => (
+                            <Option key={cat.id_categoria} value={cat.id_categoria}>
+                                {cat.nombre_categoria === "categoria_eliminada" ? "Categorias desvinculados/eliminados" : cat.nombre_categoria}
+                            </Option>
+                        ))}
+                    </Select>
+                </Flex>
                 <Button onClick={handleViewCart} style={{ marginTop: "1rem" }} size='large'>
                     Revisar <ShoppingCart />
                 </Button>
-            </Flex>
             <Flex vertical gap="small">
                 <Table
                     dataSource={filteredData}
@@ -108,8 +137,8 @@ function SalesManager() {
                     />
                 </Table>
             </Flex>
-            {openModalCart && <ModalAddToCart closeModal={() => setOpenModalCart(false)} selectedProduct={selectedProduct} updateStockInGlobalState={updateStockInGlobalState}/>}
-            {openViewCart && <ViewCart closeModal={handleViewCart}/>}
+            {openModalCart && <ModalAddToCart closeModal={() => setOpenModalCart(false)} selectedProduct={selectedProduct} updateStockInGlobalState={updateStockInGlobalState} />}
+            {openViewCart && <ViewCart closeModal={handleViewCart} />}
         </>
     );
 }
