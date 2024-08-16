@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { Modal, Button, Card, Row, Col, Flex, message, Result, Spin } from 'antd';
-import { AddCardOutlined, CleaningServices, DoneAll, MoneyRounded, Print} from '@mui/icons-material';
+import { Modal, Button, Card, Row, Col, Flex, Spin } from 'antd';
+import { AddCardOutlined, CleaningServices, DeleteOutline, MoneyRounded } from '@mui/icons-material';
 import { useAppContext } from '../../../utils/contexto';
 import "./Css/ViewCart.css"
-import ResultSuccess from '../Resultados/ResultSuccess';
 const { Meta } = Card;
 
 function ViewCart({ closeModal }) {
-  const { cart,completeCashSale, updateStockInDb} = useAppContext();
+  const { cart, completeCashSale, updateStockInDb,setCart } = useAppContext();
 
-  const updateProductsBeforeShop = async() =>{
-    
+  const updateProductsBeforeShop = async () => {
+
     await updateStockInDb(cart)
 
   }
@@ -19,22 +18,35 @@ function ViewCart({ closeModal }) {
   for (let i = 0; i < cart.length; i += 2) {
     chunkedCart.push(cart.slice(i, i + 2));
   }
-  let sumatoriaPrecio = cart.reduce((acc, product)=>  acc + (product.precio_unitario * product.quantity) ,0)
+  let sumatoriaPrecio = cart.reduce((acc, product) => acc + (product.precio_unitario * product.quantity), 0)
 
   const [processingPurchase, setProcessingPurchase] = useState(false)
-  
-  const handleFinnalyPurchaseCash = async() =>{
-    setProcessingPurchase(true)
-    const response = await completeCashSale()
-    setProcessingPurchase(false)
 
-    if (response.code === 201) {
-      closeModal()
+  const handleFinnalyPurchase = async (type) => {
+    setProcessingPurchase(true)
+    if (type === "efectivo") {
+      const response = await completeCashSale("efectivo")
+      setProcessingPurchase(false)
+
+      if (response.code === 201) {
+        await updateProductsBeforeShop()
+        closeModal()
+      }
+    } else if (type === "mp") {
+      const response = await completeCashSale("mercadopago/transferencia")
+      setProcessingPurchase(false)
+      if (response.code === 201) {
+        await updateProductsBeforeShop()
+        closeModal()
+      }
     }
-    updateProductsBeforeShop()
   }
 
-  
+  const handleDeleteProduct = (idProd) =>{
+      setCart(cart.filter((prod)=> prod.id_producto !== idProd))      
+  }
+
+
   return (
     <>
       <Modal
@@ -46,48 +58,55 @@ function ViewCart({ closeModal }) {
         ]}
       >
         <Flex vertical gap="small" >
-        <div className="products__cart-container">
-        {chunkedCart.map((pair, index) => (
-          <Row gutter={[16, 16]} key={index} justify="center">
-            {pair.map((product, idx) => (
-              <Col span={12} key={idx}>
-                <Card
-                  hoverable
-                  style={{ width: '100%' }}
-                >
-                  <Meta 
-                    title={product.nombre_producto} 
-                    description={`Cantidad: ${product.quantity} - Precio: $${product.precio_unitario}`} 
-                  />
-                </Card>
-              </Col>
+          <div className="products__cart-container">
+            {chunkedCart.map((pair, index) => (
+              <Row gutter={[16, 16]} key={index} justify="center">
+                {pair.map((product, idx) => (
+                  <Col span={12} key={idx}>
+                    <Card
+                      hoverable
+                      style={{ width: '100%' }}
+                    >
+                      <Meta
+                        title={product.nombre_producto}
+                        description={(
+                          <>
+                          <Flex>
+                          Cantidad {product.quantity}Uds - Precio: ${product.precio_unitario}
+                          <Button onClick={()=>handleDeleteProduct(product.id_producto)}><DeleteOutline/></Button>
+                          </Flex>
+                          </>
+                        )}
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
             ))}
-          </Row>
-        ))}
-        </div>
+          </div>
 
-        <Card hoverable style={{width:"100%"}}>
-                <Meta 
-                title={(
-                    <h1>Total: ${sumatoriaPrecio.toFixed(2)}</h1>
-                )}
-                description={(
-                    <>
-                    <Flex gap="small" vertical>
-                      <Button type='primary'  danger disabled={processingPurchase || sumatoriaPrecio == 0}>Limpiar carrito <CleaningServices/></Button>
-                      <Button type='primary'  onClick={handleFinnalyPurchaseCash} disabled={processingPurchase || sumatoriaPrecio == 0}>{processingPurchase ? <Spin/> : (<>Concretar venta en efectivo <MoneyRounded/></>)}</Button>
-                      <Button type='primary'  disabled={processingPurchase || sumatoriaPrecio == 0}>Concretar venta Mercado Pago <AddCardOutlined/></Button>
-                    </Flex>
+          <Card hoverable style={{ width: "100%" }}>
+            <Meta
+              title={(
+                <h1>Total: ${sumatoriaPrecio.toFixed(2)}</h1>
+              )}
+              description={(
+                <>
+                  <Flex gap="small" vertical>
+                    <Button type='primary' danger disabled={processingPurchase || sumatoriaPrecio == 0} onClick={()=> setCart([])}>Limpiar carrito <CleaningServices /></Button>
+                    <Button type='primary' onClick={() => handleFinnalyPurchase("efectivo")} disabled={processingPurchase || sumatoriaPrecio == 0}>{processingPurchase ? <Spin /> : (<>Concretar venta en efectivo <MoneyRounded /></>)}</Button>
+                    <Button type='primary' disabled={processingPurchase || sumatoriaPrecio == 0} onClick={() => handleFinnalyPurchase("mp")}>Concretar venta Mercado Pago/Transferencia <AddCardOutlined /></Button>
+                  </Flex>
 
-                    </>
-                )}
-                >
-                </Meta>
-        </Card>
+                </>
+              )}
+            >
+            </Meta>
+          </Card>
         </Flex>
       </Modal>
 
-      
+
     </>
   );
 }
