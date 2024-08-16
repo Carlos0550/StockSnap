@@ -1,7 +1,7 @@
 import React, { useContext, createContext, useEffect, useState, useRef } from "react"
 import { supabase } from "../supabase";
 import { message, Result, Button, Modal } from "antd";
-import { HideImage } from "@mui/icons-material";
+import axios from "axios"
 export const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -516,7 +516,8 @@ export const AppContextProvider = ({ children }) => {
     }
     const [purchaseFailed, setPurchaseFailed] = useState(false)
     const [purchaseSuccess, setPurchaseSuccess] = useState(false)
-    const completeCashSale = async () => {
+    const [paymentMethod, setPeymentMethod] = useState('')
+    const completeCashSale = async (paymentType) => {
         const fechaActual = new Date();
 
         const año = fechaActual.getFullYear();
@@ -527,13 +528,14 @@ export const AppContextProvider = ({ children }) => {
             .insert({
                 fecha_venta: `${año}-${mes}-${dia}`,
                 total: 500,
-                metodo_pago: "efectivo",
+                metodo_pago: paymentType,
                 detalle_venta: JSON.stringify(cart)
             })
 
         if (error) {
             return { code: 500 }
         } else {
+            setPeymentMethod(paymentType)
             setPurchaseSuccess(true)
             message.success("Venta exitosa!")
             setCart([]);
@@ -576,6 +578,9 @@ export const AppContextProvider = ({ children }) => {
             hiddenMessage();
         }
     };
+
+    
+    
     
     return (
         <AppContext.Provider value={{
@@ -594,8 +599,8 @@ export const AppContextProvider = ({ children }) => {
                 >
                     <Result
                         status="success"
-                        title="Compra en efectivo realizada con exito!"
-                        subTitle="Puede imprimir este comprobante de compra ahora o hacerlo mas tarde en más opciones -> Historial de ventas"
+                        title={`Compra en ${paymentMethod} realizada con exito!`}
+                        subTitle="Puede encontrar esta venta registrada en más opciones -> Historial de ventas"
                         extra={[
                             <Button type="primary" onClick={()=>setPurchaseSuccess(false)}>Terminar venta</Button>
                         ]}
