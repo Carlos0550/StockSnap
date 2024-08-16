@@ -6,7 +6,6 @@ import { useAppContext } from '../../../../utils/contexto'
 
 function RevisionProductoModal({ closeModal, product, capitalizeLabel, proveedores, categorias, setter, setterCategorias, setterProveedores }) {
     const keys = Object.keys(product)
-    console.log(product)
     const { insertProducts } = useAppContext()
 
     const getCategoryNameById = (id) => {
@@ -16,7 +15,7 @@ function RevisionProductoModal({ closeModal, product, capitalizeLabel, proveedor
     }
 
     const getProviderNameById = (id) => {
-        console.log(id)
+      
         const provider = proveedores.find(prov => prov.id_proveedor === id)
         return provider ? provider.nombre_proveedor : "Desconocido"
     }

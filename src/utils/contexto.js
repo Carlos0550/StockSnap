@@ -217,7 +217,7 @@ export const AppContextProvider = ({ children }) => {
                     if (updateError) {
                         hasError = true;
                         console.log(updateError);
-                        break;  // Detener el bucle si ocurre un error de actualización
+                        break; 
                     }
                 } catch (error) {
                     console.log(error);
@@ -241,6 +241,8 @@ export const AppContextProvider = ({ children }) => {
                     hasError = true;
                     console.log(deleteError);
                 }
+                await fetchCategories()
+                await fetchProducts()
             }
         } catch (error) {
             console.log(error);
@@ -420,7 +422,9 @@ export const AppContextProvider = ({ children }) => {
 
             if (response.status === 204) {
                 message.success("Proveedor eliminado correctamente!", 3)
-                fetchProveedores()
+                await fetchProveedores()
+                await fetchProducts()
+
             } else {
                 message.error("Hubo un error al eliminar el proveedor ", 3)
                 console.log(response.error)
