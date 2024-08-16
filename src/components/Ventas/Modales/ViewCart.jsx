@@ -7,8 +7,13 @@ import ResultSuccess from '../Resultados/ResultSuccess';
 const { Meta } = Card;
 
 function ViewCart({ closeModal }) {
-  const { cart,completeCashSale,purchaseSuccess, setPurchaseSuccess,setPurchaseFailed, purchaseFailed } = useAppContext();
+  const { cart,completeCashSale, updateStockInDb} = useAppContext();
 
+  const updateProductsBeforeShop = async() =>{
+    
+    await updateStockInDb(cart)
+
+  }
   // Agrupa los productos de dos en dos
   const chunkedCart = [];
   for (let i = 0; i < cart.length; i += 2) {
@@ -26,9 +31,10 @@ function ViewCart({ closeModal }) {
     if (response.code === 201) {
       closeModal()
     }
+    updateProductsBeforeShop()
   }
 
-  // console.log(purchaseSuccess ? "Deberia mostrar el estado de la compra" : "No esta mostrando el estado")
+  
   return (
     <>
       <Modal

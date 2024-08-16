@@ -9,7 +9,7 @@ const { Search } = Input;
 
 function SalesManager() {
     const [searchText, setSearchText] = useState('');
-    const { stockForSales } = useAppContext();
+    const { stockForSales,setStockForSales } = useAppContext();
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openModalCart, setOpenModalCart] = useState(false);
     const [openViewCart, setOpenViewCart] = useState(false)
@@ -47,6 +47,16 @@ function SalesManager() {
             message.error('Producto no encontrado.');
         }
     };
+
+    const updateStockInGlobalState = (idProducto, newStock) =>{
+        const updatedStock = stockForSales.map(prod =>{
+            if (prod.id_producto === idProducto) {
+                return {...prod, stock: newStock}
+            }
+            return prod
+        });
+        setStockForSales(updatedStock)
+    }
 
     return (
         <>
@@ -98,7 +108,7 @@ function SalesManager() {
                     />
                 </Table>
             </Flex>
-            {openModalCart && <ModalAddToCart closeModal={() => setOpenModalCart(false)} selectedProduct={selectedProduct} />}
+            {openModalCart && <ModalAddToCart closeModal={() => setOpenModalCart(false)} selectedProduct={selectedProduct} updateStockInGlobalState={updateStockInGlobalState}/>}
             {openViewCart && <ViewCart closeModal={handleViewCart}/>}
         </>
     );
