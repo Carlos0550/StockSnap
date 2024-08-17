@@ -7,6 +7,7 @@ import ManageStock from '../../components/Stock/ManageStock';
 import { useAppContext } from '../../utils/contexto';
 import ManageProviders from '../../components/Proveedores/ManageProviders';
 import SalesManager from '../../components/Ventas/SalesManager';
+import MoreOptionsManager from '../../components/masopciones/MoreOptionsManager';
 function Home() {
   const options = ["Inicio", "Stock", "Proveedores", "Ventas", "Más opciones"];
   const [padding, setPadding] = useState('1rem');
@@ -31,7 +32,7 @@ function Home() {
     "stock": <ManageStock />,
     "proveedores": <ManageProviders/>,
     "ventas": <SalesManager/>,
-    "másopciones": <Empty/>
+    "másopciones": <MoreOptionsManager/>
   }
 
   const [widthValue, setWidthValue] = useState(0)
