@@ -111,6 +111,15 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+    const fetchUsageDisk = async() =>{
+        try {
+            const response = await axios.post("http://localhost:4000/check-space")
+            console.log(response)
+        } catch (error) {
+            
+        }
+    }
+
     const messageShowRef = useRef(false)
     const [sistemLoading, setSistemLoading] = useState(false)
     useEffect(() => {
@@ -120,7 +129,7 @@ export const AppContextProvider = ({ children }) => {
             const hiddenMessage = message.loading("Preparando todo...", 0);
             messageShowRef.current = true;
 
-            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage), fetchProducts(hiddenMessage), fetchStockForSales(hiddenMessage)]);
+            await Promise.all([fetchCategories(hiddenMessage), fetchProveedores(hiddenMessage), fetchProducts(hiddenMessage), fetchStockForSales(hiddenMessage), fetchUsageDisk()]);
 
             hiddenMessage();
             setSistemLoading(false);
