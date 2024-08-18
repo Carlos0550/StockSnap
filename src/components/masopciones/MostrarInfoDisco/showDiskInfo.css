@@ -1,0 +1,16 @@
+.statistic__container{
+    display: flex;
+    gap: 1rem;
+    padding: .5rem;
+
+}
+.statistic__info{
+    display: flex;
+    flex-direction: column;
+    padding: .5rem;
+}
+.statistic__info p{
+    max-width: 90%;
+    flex-wrap: wrap;
+    word-break:keep-all;
+}
