@@ -1,14 +1,16 @@
 import { Collapse } from 'antd'
 import React, { useEffect, useState } from 'react'
+import ShowDIskInfo from './MostrarInfoDisco/ShowDIskInfo'
+import SalesHistoryModal from './Modales/SalesHistoryModal'
 
 function MoreOptionsManager() {
     const [activeKey, setActiveKey] = useState(null)
-    const [activeModalQueryDb, setActiveModalQueryDb] = useState(false)
+    const [activeModalSalesHistory, setActiveModalSalesHistory] = useState(false)
 
 
     useEffect(()=>{
-        if (activeKey === "2") {
-            setActiveModalQueryDb(true)
+        if (activeKey && activeKey[0] === "2") {
+            setActiveModalSalesHistory(true)
             setActiveKey(null)        
         }
     },[activeKey])
@@ -16,17 +18,18 @@ function MoreOptionsManager() {
         {
             key: "1",
             label: "Consultar espacio disponible en el sistema",
-            render:null
+            children:<ShowDIskInfo/>
         },
         {
             key: "2",
             label:"Revisar historial de ventas",
-            render:null
+            children:null
         }
     ]
   return (
     <>
         <Collapse accordion items={items} activeKey={activeKey} onChange={((value)=> setActiveKey(value))}/>
+        {activeModalSalesHistory && <SalesHistoryModal closeModal={()=> setActiveModalSalesHistory(false)}/>}
     </>
   )
 }
