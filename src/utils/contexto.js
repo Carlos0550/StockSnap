@@ -2,6 +2,7 @@ import React, { useContext, createContext, useEffect, useState, useRef } from "r
 import { supabase } from "../supabase";
 import { message, Result, Button, Modal } from "antd";
 import axios from "axios"
+import { useLocation } from "react-router-dom";
 export const AppContext = createContext()
 
 export const useAppContext = () => {
@@ -168,27 +169,30 @@ export const AppContextProvider = ({ children }) => {
         ]);
         hiddenMessage()
     }
+    const location = useLocation()
     useEffect(() => {
-        (async () => {
-            if (messageShowRef.current) return;
-            setSistemLoading(true);
-            const hiddenMessage = message.loading("Preparando todo...", 0);
-            messageShowRef.current = true;
-
-            await Promise.all([
-                fetchCategories(hiddenMessage), 
-                fetchProveedores(hiddenMessage), 
-                fetchProducts(hiddenMessage), 
-                fetchStockForSales(hiddenMessage), 
-                fetchUsageDisk(hiddenMessage),
-                fetchSalesHistory(hiddenMessage)
-            ]);
-
-            hiddenMessage();
-            setSistemLoading(false);
-            message.success("Sistema listo");
-        })();
-    }, []);
+        if (location.pathname == "/home") {
+            (async () => {
+                if (messageShowRef.current) return;
+                setSistemLoading(true);
+                const hiddenMessage = message.loading("Preparando todo...", 0);
+                messageShowRef.current = true;
+    
+                await Promise.all([
+                    fetchCategories(hiddenMessage), 
+                    fetchProveedores(hiddenMessage), 
+                    fetchProducts(hiddenMessage), 
+                    fetchStockForSales(hiddenMessage), 
+                    fetchUsageDisk(hiddenMessage),
+                    fetchSalesHistory(hiddenMessage)
+                ]);
+    
+                hiddenMessage();
+                setSistemLoading(false);
+                message.success("Sistema listo");
+            })();
+        }
+    }, [location.pathname]);
 
 
     const insertCategories = async (values) => {
