@@ -25,7 +25,7 @@ function ViewCart({ closeModal }) {
   const handleFinnalyPurchase = async (type) => {
     setProcessingPurchase(true)
     if (type === "efectivo") {
-      const response = await completeCashSale("efectivo")
+      const response = await completeCashSale("efectivo",sumatoriaPrecio)
       setProcessingPurchase(false)
 
       if (response.code === 201) {
@@ -33,7 +33,7 @@ function ViewCart({ closeModal }) {
         closeModal()
       }
     } else if (type === "mp") {
-      const response = await completeCashSale("mercadopago/transferencia")
+      const response = await completeCashSale("mercadopago/transferencia",sumatoriaPrecio)
       setProcessingPurchase(false)
       if (response.code === 201) {
         await updateProductsBeforeShop()
