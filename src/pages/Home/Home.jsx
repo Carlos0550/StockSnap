@@ -67,7 +67,7 @@ function Home() {
           (async () => {
             try {
               const response = await axios.post(
-                "http://localhost:4000/validate-session",
+                "https://stocksnap-server.vercel.app/validate-session",
                 { token },
                 { headers: { 'Content-Type': 'application/json' } }
               );
