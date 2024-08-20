@@ -11,15 +11,16 @@ useEffect(() => {
     if (token && !alreadyShowMessage.current) {
       alreadyShowMessage.current = true;
 
-      const hiddenMessage = message.loading("Validando sesión", 0); // 0 para que no desaparezca automáticamente
+      const hiddenMessage = message.loading("Aguarde...", 0); // 0 para que no desaparezca automáticamente
 
       (async () => {
         try {
           const response = await axios.post(
-            "http://localhost:4000/validate-session",
+            "https://stocksnap-server.vercel.app/validate-session",
             { token },
             { headers: { 'Content-Type': 'application/json' } }
           );
+
 
           const { code, user } = response.data;
 
@@ -30,13 +31,12 @@ useEffect(() => {
             }, 1000);
           } else if (code === 500) {
             message.error("Error interno del servidor, por favor recargue la pagina",4);
-            setTimeout(() => window.location.reload(), 2000);
           } else if (code === 406) {
             message.error("Sesión expirada");
-            setTimeout(() => window.location.reload(), 2000);
+            
           }
         } catch (error) {
-          message.error("Error de red, por favor recargue la pagina",4);
+          console.log(error)
           
         } finally {
           hiddenMessage(); 
@@ -67,8 +67,7 @@ useEffect(() => {
         const hiddenMessage = message.loading("Iniciando sesión",0)
         setProcessing(true)
         try {
-            const response = await axios.post("http://localhost:4000/login", values)
-            console.log("Respuesta del servidor: ",response.data)
+            const response = await axios.post("https://stocksnap-server.vercel.app/login", values)
             const {token,user} = response.data
             if (response.data?.code === 500) {
                 message.error("Error interno del servidor, por favor intente nuevamente",3)
