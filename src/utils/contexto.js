@@ -19,7 +19,7 @@ export const AppContextProvider = ({ children }) => {
     const [products, setProducts] = useState([])
     const [stockForSales, setStockForSales] = useState([])
     const [cart, setCart] = useState([])
-
+    const [clients, setClients] = useState([])
     // useEffect(() => {
     //     console.log(cart)
     // }, [cart])
@@ -155,6 +155,26 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+    const fetchAllClients = async (hiddenMessage) => {
+        try {
+            const response = await axios.get("http://localhost:4000/getAllClients");
+            setClients(response.data); // Aquí ya asumes que la respuesta es exitosa
+        } catch (error) {
+            hiddenMessage();
+            if (error.response) {
+                // Errores de la respuesta del servidor (status != 2xx)
+                message.error(`${error.response.data.message}`, 3);
+            } else if (error.request) {
+                // No se recibió respuesta del servidor
+                message.error("No se recibió respuesta del servidor, por favor intente nuevamente", 3);
+            } else {
+                // Otros errores
+                message.error("Error interno del servidor, por favor, intente nuevamente", 3);
+            }
+        }
+    };
+    
+
     const messageShowRef = useRef(false)
     const [sistemLoading, setSistemLoading] = useState(false)
 
@@ -166,6 +186,7 @@ export const AppContextProvider = ({ children }) => {
             fetchProducts(hiddenMessage),
             fetchStockForSales(hiddenMessage),
             fetchSalesHistory(hiddenMessage),
+            fetchAllClients(hiddenMessage)
         ]);
         hiddenMessage()
     }
@@ -184,7 +205,8 @@ export const AppContextProvider = ({ children }) => {
                     fetchProducts(hiddenMessage), 
                     fetchStockForSales(hiddenMessage), 
                     fetchUsageDisk(hiddenMessage),
-                    fetchSalesHistory(hiddenMessage)
+                    fetchSalesHistory(hiddenMessage),
+                    fetchAllClients(hiddenMessage)
                 ]);
     
                 hiddenMessage();
@@ -601,6 +623,20 @@ export const AppContextProvider = ({ children }) => {
         }
     };
 
+
+    const createCLients = async(values) =>{
+        try {
+            const response = await axios.post("http://localhost:4000/create-client", {values})
+            console.log(response.data)
+            if (response.data.code === 201) return message.success("CLiente creado exitosamente!",3)
+            if (response.data.code === 400) return message.warning("Hubo un problema al crear el cliente, por favor reintente nuevamente",4)
+            if (response.data.code === 500) return message.error("Hubo un error critico al añadir el cliente, por favor reintente nuevamente",4)
+        } catch (error) {
+            console.log(error)
+            message.error("Hubo un error critico al añadir el cliente, por favor reintente nuevamente",4)
+        }
+    }
+
     
     
     
@@ -613,7 +649,8 @@ export const AppContextProvider = ({ children }) => {
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
             stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed,updateStockInDb,
             spaceDisk,
-            salesHistory
+            salesHistory,
+            createCLients, clients,
         }}>
             {children}
             {purchaseSuccess && (
