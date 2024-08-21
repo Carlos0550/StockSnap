@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { TextField } from "@mui/material"
-import { Button, Flex, message, Spin } from 'antd';
+import { Button, Divider, Flex, message, Spin } from 'antd';
 import "./createClients.css"
 import { useAppContext } from '../../../../utils/contexto';
 function CreateClients() {
@@ -9,12 +9,17 @@ function CreateClients() {
         nombre_completo: "",
         dni: "",
         apodo: "",
+        direccion: "",
+        telefono:"",
+
     });
 
     const [errors, setErrors] = useState({
         nombre_completo: "",
         dni: "",
         apodo: "",
+        direccion: "",
+        telefono:"",
     });
 
     const handleChange = (e) => {
@@ -40,13 +45,18 @@ function CreateClients() {
         let valid = true;
         const newErrors = {};
 
-        if (!values.nombre_completo) {
+        if (!values.nombre_completo ) {
             newErrors.nombre_completo = "El nombre no puede estar vacio."
             valid = false;
         }
         if (!values.dni || !validateDni(values.dni)) {
             newErrors.dni = "El DNI no es válido"
             valid = false;
+        }
+
+        if (!values.telefono) {
+            newErrors.telefono = "El télefono es requerido"
+            valid = false
         }
 
         setErrors(newErrors);
@@ -59,11 +69,13 @@ function CreateClients() {
                 nombre_completo: "",
                 dni: "",
                 apodo: "",
+                direccion: "",
+                telefono:"",
             });
             setErrors({
                 nombre_completo: "",
                 dni: "",
-                apodo: "",
+                telefono:"",
             })
         }
     }
@@ -103,6 +115,35 @@ function CreateClients() {
                     onChange={handleChange}
                     disabled={isProcessing}
                 />
+
+                <Divider>Contacto</Divider>
+
+                <TextField
+                    id='telefono'
+                    error={!!errors.telefono}
+                    helperText={errors.telefono}
+                    name='telefono'
+                    label="Ingresa el contacto del cliente"
+                    value={values.telefono}
+                    className='textfield__create-client'
+                    onChange={handleChange}
+                    disabled={isProcessing}
+
+                />
+                <TextField
+                    id='direccion'
+                    className='textfield__create-client'
+                    name='direccion'
+                    label="Domicilio del cliente"
+                    value={values.direccion}
+                    error={!!errors.direccion}
+                    helperText={errors.direccion}
+                    onChange={handleChange}
+                    disabled={isProcessing}
+
+                />
+                
+
             </div>
             <Button disabled={isProcessing} onClick={handleSubmit} className='btn_save-client'>{isProcessing ? <Spin /> : "Guardar cliente"}</Button>
 
