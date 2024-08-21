@@ -2,15 +2,15 @@ import { Button, Modal, Spin, Table } from 'antd'
 import React, { useState } from 'react'
 import { useAppContext } from '../../../../utils/contexto'
 import Search from 'antd/es/transfer/search'
+import ViewDebtsClients from '../../Modales/ViewDebtsClients'
 
 function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
     const { clients, addDebt, debts,updateDebt,getFullDate } = useAppContext()
     const clientes = clients.data
     const [searchText, setSearchText] = useState('')
-
-
-
-
+    const [updatingDebt, setUpdatingDebt] = useState(false)
+    const [addingDebtServer, setAddingDebt] = useState(false)
+    const [openModalViewDebtsClients, setOpenModalViewDebtsClients] = useState(false)
     let data;
     if (clientes && clientes.length > 0) {
         data = clientes
@@ -35,8 +35,6 @@ function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
         size: 5
     }
 
-    const [updatingDebt, setUpdatingDebt] = useState(false)
-    const [addingDebtServer, setAddingDebt] = useState(false)
     const handlePushDebt = async(clientId) =>{
         const values = {
             clientId,
@@ -71,8 +69,12 @@ function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
             await addDebt(values)
             setAddingDebt(false)
         }
-
-        
+      };
+      const [clientId, setId_cliente] = useState(null)
+      const handleModalViewDebts = (id_cliente) =>{
+        console.log(id_cliente)
+        setOpenModalViewDebtsClients(!openModalViewDebtsClients)
+        setId_cliente(id_cliente)
       }
     return (
         <>
@@ -121,13 +123,15 @@ function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
                     key="options"
                     render={(_, record) => (
                         <>
-                        {!addingDebt && <Button type='primary'>Ver deudas</Button>}
+                        {!addingDebt && <Button type='primary' onClick={()=> handleModalViewDebts(record.idCliente)}>Ver deudas</Button>}
                         {addingDebt && <Button onClick={()=> handlePushDebt(record.idCliente)} disabled={addingDebtServer || updatingDebt}>{addingDebtServer || updatingDebt ? <Spin/> : "Agregar a este cliente"}</Button>}
                         </>
                     )}
                     />
                 </Table>
             </Modal>
+
+            {openModalViewDebtsClients && <ViewDebtsClients closeModal={handleModalViewDebts} clientId={clientId}/>}
         </>
     )
 }
