@@ -20,9 +20,16 @@ export const AppContextProvider = ({ children }) => {
     const [stockForSales, setStockForSales] = useState([])
     const [cart, setCart] = useState([])
     const [clients, setClients] = useState([])
-    // useEffect(() => {
-    //     console.log(cart)
-    // }, [cart])
+    const [debts, setDebts] = useState([])
+    const getFullDate = () => {
+        const fechaActual = new Date();
+        const dia = String(fechaActual.getDate()).padStart(2, '0');
+        const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+        const anio = fechaActual.getFullYear();
+
+
+        return `${anio}-${mes}-${dia}`
+    }
 
     const fetchCategories = async (hiddenMessage) => {
         try {
@@ -113,31 +120,31 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const [spaceDisk, setSpaceDisk] = useState(null)
-    const fetchUsageDisk = async(hiddenMessage) =>{
+    const fetchUsageDisk = async (hiddenMessage) => {
         try {
             const response = await axios.post("https://stocksnap-server.vercel.app/check-space")
             if (!response) {
                 hiddenMessage()
-                setSpaceDisk({code:500})
-                message.error("Error al traer la información de uso del disco",3)
+                setSpaceDisk({ code: 500 })
+                message.error("Error al traer la información de uso del disco", 3)
                 console.log(response)
-            }else{
+            } else {
                 setSpaceDisk(Math.floor(response.data.space))
             }
         } catch (error) {
             hiddenMessage()
-            message.error("Error al traer la información de uso del disco",3)
+            message.error("Error al traer la información de uso del disco", 3)
             console.log(error)
         }
     }
 
     const [salesHistory, setSalesHistory] = useState([])
 
-    const fetchSalesHistory = async(hiddenMessage)=>{
+    const fetchSalesHistory = async (hiddenMessage) => {
         try {
-            const {data,error} = await supabase
-            .from("ventas")
-            .select()
+            const { data, error } = await supabase
+                .from("ventas")
+                .select()
 
             if (error) {
                 hiddenMessage()
@@ -173,20 +180,35 @@ export const AppContextProvider = ({ children }) => {
             }
         }
     };
-    
+
+    const fetchAllDebts = async () => {
+        try {
+            const response = await axios.get("http://localhost:4000/fetchAllDebts")
+            if (response.status === 200) {
+                return setDebts(response.data.data)
+            } else {
+                return message.error("Hubo un error desconocido al intentar traer las deudas", 4)
+            }
+        } catch (error) {
+            console.log(error)
+            message.error(`${error.response?.data.message}`, 3)
+        }
+    }
+
 
     const messageShowRef = useRef(false)
     const [sistemLoading, setSistemLoading] = useState(false)
 
-    const fetchAll = async() =>{
-        const hiddenMessage = message.loading("Actualizando...",0)
+    const fetchAll = async () => {
+        const hiddenMessage = message.loading("Actualizando...", 0)
         await Promise.all([
             fetchCategories(hiddenMessage),
             fetchProveedores(hiddenMessage),
             fetchProducts(hiddenMessage),
             fetchStockForSales(hiddenMessage),
             fetchSalesHistory(hiddenMessage),
-            fetchAllClients(hiddenMessage)
+            fetchAllClients(hiddenMessage),
+            fetchAllDebts()
         ]);
         hiddenMessage()
     }
@@ -198,17 +220,18 @@ export const AppContextProvider = ({ children }) => {
                 setSistemLoading(true);
                 const hiddenMessage = message.loading("Preparando todo...", 0);
                 messageShowRef.current = true;
-    
+
                 await Promise.all([
-                    fetchCategories(hiddenMessage), 
-                    fetchProveedores(hiddenMessage), 
-                    fetchProducts(hiddenMessage), 
-                    fetchStockForSales(hiddenMessage), 
+                    fetchCategories(hiddenMessage),
+                    fetchProveedores(hiddenMessage),
+                    fetchProducts(hiddenMessage),
+                    fetchStockForSales(hiddenMessage),
                     fetchUsageDisk(hiddenMessage),
                     fetchSalesHistory(hiddenMessage),
-                    fetchAllClients(hiddenMessage)
+                    fetchAllClients(hiddenMessage),
+                    fetchAllDebts()
                 ]);
-    
+
                 hiddenMessage();
                 setSistemLoading(false);
                 message.success("Sistema listo");
@@ -274,7 +297,7 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const updateCategory = async (values) => {
-        const hiddenMessage = message.loading("Aguarde...",0)
+        const hiddenMessage = message.loading("Aguarde...", 0)
         const { error } = await supabase
             .from("categorias")
             .update({
@@ -295,7 +318,7 @@ export const AppContextProvider = ({ children }) => {
     const deleteCategory = async (values = [], categoryId) => {
         let hasError = false;
         let isForeignKeyError = false;
-        const hiddenMessage = message.loading("Aguarde...",0)
+        const hiddenMessage = message.loading("Aguarde...", 0)
 
         for (let i = 0; i < values.length; i++) {
             const product = values[i];
@@ -309,7 +332,7 @@ export const AppContextProvider = ({ children }) => {
                     if (updateError) {
                         hasError = true;
                         console.log(updateError);
-                        break; 
+                        break;
                     }
                 } catch (error) {
                     console.log(error);
@@ -349,7 +372,7 @@ export const AppContextProvider = ({ children }) => {
         } catch (error) {
             console.log(error);
             hasError = true;
-        } 
+        }
     };
 
 
@@ -392,7 +415,7 @@ export const AppContextProvider = ({ children }) => {
 
     const updateProduct = async (values = []) => {
         let hasError = false
-        const hiddenMessage = message.loading("Aguarde...",0)
+        const hiddenMessage = message.loading("Aguarde...", 0)
 
         try {
             if (values.length > 0) {
@@ -484,7 +507,7 @@ export const AppContextProvider = ({ children }) => {
 
     const updateProvider = async (values) => {
         const { contacto } = values
-        const hiddenMessage = message.loading("Aguarde...",0)
+        const hiddenMessage = message.loading("Aguarde...", 0)
 
         try {
             const { error } = await supabase
@@ -512,7 +535,7 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const deleteProvider = async (id_proveedor) => {
-        const hiddenMessage = message.loading("Aguarde...",0)
+        const hiddenMessage = message.loading("Aguarde...", 0)
 
         try {
             const response = await supabase
@@ -553,7 +576,7 @@ export const AppContextProvider = ({ children }) => {
             } else {
                 await fetchAll()
                 message.success("Proveedor añadido con éxito!")
-                
+
                 return;
             }
         } catch (error) {
@@ -565,7 +588,7 @@ export const AppContextProvider = ({ children }) => {
     const [purchaseFailed, setPurchaseFailed] = useState(false)
     const [purchaseSuccess, setPurchaseSuccess] = useState(false)
     const [paymentMethod, setPeymentMethod] = useState('')
-    const completeCashSale = async (paymentType,total) => {
+    const completeCashSale = async (paymentType, total) => {
         const fechaActual = new Date();
 
         const año = fechaActual.getFullYear();
@@ -603,15 +626,15 @@ export const AppContextProvider = ({ children }) => {
                         stock: element.stock - quantity,
                     })
                     .eq("id_producto", element.id_producto);
-    
+
                 if (error) {
                     console.log("Error actualizando producto:", error);
                     throw new Error("Error actualizando producto");
                 }
             }
-    
+
             await fetchAll()
-    
+
             message.success("Stock actualizado exitosamente");
             setCart([]);
             return { code: 201 };
@@ -624,33 +647,95 @@ export const AppContextProvider = ({ children }) => {
     };
 
 
-    const createCLients = async(values) =>{
+
+    const createCLients = async (values) => {
+        const contacto = JSON.stringify({
+            direccion: values.direccion || "",
+            telefono: values.telefono || ""
+        });
+
+        const dataClient = {
+            nombre_completo: values.nombre_completo,
+            dni: values.dni,
+            apodo: values.apodo,
+            contacto: contacto
+        };
+
         try {
-            const response = await axios.post("http://localhost:4000/create-client", {values})
-            console.log(response.data)
-            if (response.data.code === 201) return message.success("CLiente creado exitosamente!",3)
-            if (response.data.code === 400) return message.warning("Hubo un problema al crear el cliente, por favor reintente nuevamente",4)
-            if (response.data.code === 500) return message.error("Hubo un error critico al añadir el cliente, por favor reintente nuevamente",4)
+            const response = await axios.post("http://localhost:4000/create-client", { dataClient });
+
+            if (response.data.code === 201) {
+                await fetchAllClients();
+                message.success("¡Cliente creado exitosamente!", 3);
+            } else if (response.data.code === 400) {
+                message.warning("Hubo un problema al crear el cliente, por favor reintente nuevamente.", 4);
+            } else if (response.data.code === 409) {
+                message.warning("El DNI ingresado ya fue registrado.", 4);
+            } else if (response.data.code === 500) {
+                message.error("Hubo un error crítico al añadir el cliente, por favor reintente nuevamente.", 4);
+            } else {
+                message.warning("Error inesperado. Código de estado: " + response.data.code, 4);
+            }
+        } catch (error) {
+            console.log(error);
+            if (error.response && error.response.data) {
+                const errorMessage = error.response.data.message || "Hubo un error crítico al añadir el cliente, por favor reintente nuevamente.";
+                message.error(errorMessage, 4);
+            } else {
+                message.error("Hubo un error crítico al añadir el cliente, por favor reintente nuevamente.", 4);
+            }
+        }
+    };
+
+    const addDebt = async (values) => {
+        try {
+            const response = await axios.post("http://localhost:4000/addDebt", { values });
+            if (response.status === 200) {
+                await fetchAllDebts()
+                return message.success(`${response.data.message}`, 3)
+            } else if (response.status === 400) {
+                return message.error(`${response.data.message}`, 3)
+            }
         } catch (error) {
             console.log(error)
-            message.error("Hubo un error critico al añadir el cliente, por favor reintente nuevamente",4)
+            return message.error(`${error.response.data.message}`, 3)
         }
+
     }
 
-    
-    
-    
-    
+    const updateDebt = async (updatedValues) => {
+        try {
+            const response = await axios.post("http://localhost:4000/updateDebts", updatedValues);
+            if (response.status === 200) {
+                message.success(`${response.data.message}`,3)
+                return;
+            }else{
+                message.error(`${response.data.message}`,4)
+                return
+            }
+        } catch (error) {
+            console.log(error);
+            message.error(`${error.response.data.message}`,4)
+            return;
+        }
+    };
+
+
+
+
+
+
     return (
         <AppContext.Provider value={{
             sistemLoading,
             insertProducts, products, updateProduct, deleteProduct,
             insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
-            stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed,updateStockInDb,
+            stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed, updateStockInDb,
             spaceDisk,
             salesHistory,
             createCLients, clients,
+            addDebt,getFullDate, debts,updateDebt
         }}>
             {children}
             {purchaseSuccess && (
@@ -664,7 +749,7 @@ export const AppContextProvider = ({ children }) => {
                         title={`Compra en ${paymentMethod} realizada con exito!`}
                         subTitle="Puede encontrar esta venta registrada en más opciones -> Historial de ventas"
                         extra={[
-                            <Button type="primary" onClick={()=>setPurchaseSuccess(false)}>Terminar venta</Button>
+                            <Button type="primary" onClick={() => setPurchaseSuccess(false)}>Terminar venta</Button>
                         ]}
                     />
                 </Modal>
