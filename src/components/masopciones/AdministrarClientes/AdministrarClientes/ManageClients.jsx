@@ -1,20 +1,32 @@
-import { Button, Modal, Table } from 'antd'
-import React from 'react'
+import { Button, Modal, Spin, Table } from 'antd'
+import React, { useState } from 'react'
 import { useAppContext } from '../../../../utils/contexto'
+import Search from 'antd/es/transfer/search'
 
-function ManageClients({ closeModal }) {
-    const { clients } = useAppContext()
+function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
+    const { clients, addDebt, debts,updateDebt,getFullDate } = useAppContext()
     const clientes = clients.data
+    const [searchText, setSearchText] = useState('')
+
+
+
+
     let data;
     if (clientes && clientes.length > 0) {
         data = clientes
             .sort((a, b) => a.id_cliente - b.id_cliente)
+            .filter((name)=> name.nombre_completo.toLowerCase().includes(searchText.toLowerCase()))
             .map((cliente, index) => {
+                const contact = JSON.parse(cliente.contacto)
+                
                 return {
                     key: index.toString(),
                     nombreCliente: cliente.nombre_completo,
+                    idCliente: cliente.id_cliente,
                     dni: cliente.dni,
-                    apodo: cliente.apodo
+                    apodo: cliente.apodo,
+                    contactoTelefono: contact.telefono,
+                    contactoDireccion: contact.direccion
                 }
             })
     }
@@ -22,6 +34,46 @@ function ManageClients({ closeModal }) {
     const pageConfiguration = {
         size: 5
     }
+
+    const [updatingDebt, setUpdatingDebt] = useState(false)
+    const [addingDebtServer, setAddingDebt] = useState(false)
+    const handlePushDebt = async(clientId) =>{
+        const values = {
+            clientId,
+            carrito, 
+            totalAdeudado
+        }
+        const today = getFullDate()
+        const existingDebt = debts.find(debts => debts.id_cliente === clientId)
+        if (existingDebt) {
+            const existingDate = new Date(existingDebt.fecha_deuda).toISOString().split("T")[0]
+            
+            if (existingDate === today) {
+                let existingDetalle = JSON.parse(existingDebt.detalle_deuda)
+                const updatedDetalle = [...existingDetalle, ...carrito]
+
+                const updatedTotal = existingDebt.total_adeudado + totalAdeudado
+                const updatedValues = {
+                    clientId,
+                    detalle_deuda: JSON.stringify(updatedDetalle),
+                    totalAdeudado: updatedTotal
+                };
+                setUpdatingDebt(true)
+                await updateDebt(updatedValues)
+                setUpdatingDebt(false)
+            }else{
+                setAddingDebt(true)
+                await addDebt(values)
+                setAddingDebt(false)
+            }
+        }else{
+            setAddingDebt(true)
+            await addDebt(values)
+            setAddingDebt(false)
+        }
+
+        
+      }
     return (
         <>
             <Modal
@@ -32,6 +84,12 @@ function ManageClients({ closeModal }) {
                     <Button type='primary' danger onClick={closeModal}>Cerrar</Button>
                 ]}
             >
+                <Search
+                placeholder="Buscar un producto"
+                size="large"
+                onChange={(e)=> setSearchText(e.target.value)}
+                style={{ marginTop: "2rem" }}
+                />
                 <Table dataSource={data} pagination={pageConfiguration} scroll={{x:500}}>
                     <Table.Column
                     title="Nombre del cliente"
@@ -49,15 +107,23 @@ function ManageClients({ closeModal }) {
                     key="apodo"
                     />
                     <Table.Column
-                    title="Contacto"
-                    dataIndex="contacto"
-                    key="contacto"
+                        title="Telefono"
+                        dataIndex="contactoTelefono"
+                        key="contactoTelefono"
+                    />
+                    <Table.Column
+                        title="Direccion"
+                        dataIndex="contactoDireccion"
+                        key="contactoDireccion"
                     />
 
                     <Table.Column
                     key="options"
                     render={(_, record) => (
-                        <Button type='primary'>Ver deudas</Button>
+                        <>
+                        {!addingDebt && <Button type='primary'>Ver deudas</Button>}
+                        {addingDebt && <Button onClick={()=> handlePushDebt(record.idCliente)} disabled={addingDebtServer || updatingDebt}>{addingDebtServer || updatingDebt ? <Spin/> : "Agregar a este cliente"}</Button>}
+                        </>
                     )}
                     />
                 </Table>
