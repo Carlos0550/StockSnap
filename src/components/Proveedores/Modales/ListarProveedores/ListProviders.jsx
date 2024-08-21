@@ -89,8 +89,7 @@ function ListProviders({ handleToggleModal }) {
   }
 
   const handleToggle = async (key, checked) => {
-    console.log("Key: ", key)
-    console.log("Checked: ", checked)
+    
     setSwitchDisabled({
       key: key,
       status: true,
