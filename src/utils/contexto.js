@@ -21,6 +21,9 @@ export const AppContextProvider = ({ children }) => {
     const [cart, setCart] = useState([])
     const [clients, setClients] = useState([])
     const [debts, setDebts] = useState([])
+    const [widthValue, setWidthValue] = useState(window.innerWidth)
+    const [viewDebtsClient, setViewDebtsClient] = useState([])
+
     const getFullDate = () => {
         const fechaActual = new Date();
         const dia = String(fechaActual.getDate()).padStart(2, '0');
@@ -30,6 +33,20 @@ export const AppContextProvider = ({ children }) => {
 
         return `${anio}-${mes}-${dia}`
     }
+
+    useEffect(()=>{
+
+        const handleResize = () =>{
+            setWidthValue(window.innerWidth)
+        }
+
+        window.addEventListener("resize", handleResize)
+
+        return () =>{
+            window.addEventListener("resize", handleResize)
+        }
+
+    },[])
 
     const fetchCategories = async (hiddenMessage) => {
         try {
@@ -164,7 +181,7 @@ export const AppContextProvider = ({ children }) => {
 
     const fetchAllClients = async (hiddenMessage) => {
         try {
-            const response = await axios.get("http://localhost:4000/getAllClients");
+            const response = await axios.get("https://stocksnap-server.vercel.app/getAllClients");
             setClients(response.data); // Aquí ya asumes que la respuesta es exitosa
         } catch (error) {
             hiddenMessage();
@@ -183,7 +200,7 @@ export const AppContextProvider = ({ children }) => {
 
     const fetchAllDebts = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/fetchAllDebts")
+            const response = await axios.get("https://stocksnap-server.vercel.app/fetchAllDebts")
             if (response.status === 200) {
                 return setDebts(response.data.data)
             } else {
@@ -662,7 +679,7 @@ export const AppContextProvider = ({ children }) => {
         };
 
         try {
-            const response = await axios.post("http://localhost:4000/create-client", { dataClient });
+            const response = await axios.post("https://stocksnap-server.vercel.app/create-client", { dataClient });
 
             if (response.data.code === 201) {
                 await fetchAllClients();
@@ -689,7 +706,7 @@ export const AppContextProvider = ({ children }) => {
 
     const addDebt = async (values) => {
         try {
-            const response = await axios.post("http://localhost:4000/addDebt", { values });
+            const response = await axios.post("https://stocksnap-server.vercel.app/addDebt", { values });
             if (response.status === 200) {
                 await fetchAllDebts()
                 return message.success(`${response.data.message}`, 3)
@@ -705,7 +722,7 @@ export const AppContextProvider = ({ children }) => {
 
     const updateDebt = async (updatedValues) => {
         try {
-            const response = await axios.post("http://localhost:4000/updateDebts", updatedValues);
+            const response = await axios.post("https://stocksnap-server.vercel.app/updateDebts", updatedValues);
             if (response.status === 200) {
                 message.success(`${response.data.message}`,3)
                 return;
@@ -721,7 +738,24 @@ export const AppContextProvider = ({ children }) => {
     };
 
 
+    const fetchViewDebtsClients = async(id_cliente) =>{
+        const hiddenMessage = message.loading("Trayendo vista de deudas...",0)
+        try {
+            const response = await axios.get(`http://localhost:4000/getViewDebts?id_cliente=${id_cliente}`)
 
+            if (response.status === 200) {
+                hiddenMessage()
+                return setViewDebtsClient(response.data.data)
+            }else{
+                hiddenMessage()
+                return message.info("No existen deudas",3)
+            }
+        } catch (error) {   
+            hiddenMessage()
+            console.log(error)
+            return message.error(error.response.data?.message)
+        }
+    }
 
 
 
@@ -732,10 +766,10 @@ export const AppContextProvider = ({ children }) => {
             insertCategories, categories, toggleCategories, deleteCategory, updateCategory,
             proveedores, toggleProviders, deleteProvider, addProvider, updateProvider,
             stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed, updateStockInDb,
-            spaceDisk,
+            spaceDisk,widthValue,
             salesHistory,
             createCLients, clients,
-            addDebt,getFullDate, debts,updateDebt
+            addDebt,getFullDate, debts,updateDebt,fetchViewDebtsClients, viewDebtsClient
         }}>
             {children}
             {purchaseSuccess && (
