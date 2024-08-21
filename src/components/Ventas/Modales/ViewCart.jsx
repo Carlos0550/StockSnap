@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { Modal, Button, Card, Row, Col, Flex, Spin } from 'antd';
-import { AddCardOutlined, CleaningServices, DeleteOutline, MoneyRounded } from '@mui/icons-material';
+import { AddCardOutlined, AppRegistrationRounded, CleaningServices, DeleteOutline, Draw, MoneyRounded, Tablet } from '@mui/icons-material';
 import { useAppContext } from '../../../utils/contexto';
 import "./Css/ViewCart.css"
+import ManageClients from '../../masopciones/AdministrarClientes/AdministrarClientes/ManageClients';
 const { Meta } = Card;
 
 function ViewCart({ closeModal }) {
   const { cart, completeCashSale, updateStockInDb,setCart } = useAppContext();
+  const [openSectionCreateClient, setOpenSectionCreateClient] = useState(false)
+  const [OpenSectionShowAllClients, setOpenSectionShowAllClients] = useState(false)
 
   const updateProductsBeforeShop = async () => {
-
     await updateStockInDb(cart)
-
   }
   // Agrupa los productos de dos en dos
   const chunkedCart = [];
   for (let i = 0; i < cart.length; i += 2) {
     chunkedCart.push(cart.slice(i, i + 2));
   }
+
   let sumatoriaPrecio = cart.reduce((acc, product) => acc + (product.precio_unitario * product.quantity), 0)
 
   const [processingPurchase, setProcessingPurchase] = useState(false)
@@ -46,7 +48,12 @@ function ViewCart({ closeModal }) {
       setCart(cart.filter((prod)=> prod.id_producto !== idProd))      
   }
 
+  
+  const toggleShowClients = () =>{
+    setOpenSectionShowAllClients(!OpenSectionShowAllClients)
+  }
 
+  
   return (
     <>
       <Modal
@@ -96,6 +103,7 @@ function ViewCart({ closeModal }) {
                     <Button type='primary' danger disabled={processingPurchase || sumatoriaPrecio == 0} onClick={()=> setCart([])}>Limpiar carrito <CleaningServices /></Button>
                     <Button type='primary' onClick={() => handleFinnalyPurchase("efectivo")} disabled={processingPurchase || sumatoriaPrecio == 0}>{processingPurchase ? <Spin /> : (<>Concretar venta en efectivo <MoneyRounded /></>)}</Button>
                     <Button type='primary' disabled={processingPurchase || sumatoriaPrecio == 0} onClick={() => handleFinnalyPurchase("mp")}>Concretar venta Mercado Pago/Transferencia <AddCardOutlined /></Button>
+                    <Button type='primary' disabled={sumatoriaPrecio == 0} onClick={toggleShowClients} >Anotar a cuenta corriente <AppRegistrationRounded/></Button>
                   </Flex>
 
                 </>
@@ -106,7 +114,7 @@ function ViewCart({ closeModal }) {
         </Flex>
       </Modal>
 
-
+    {OpenSectionShowAllClients && <ManageClients carrito={cart} totalAdeudado={sumatoriaPrecio} addingDebt={true} closeModal={()=> setOpenSectionShowAllClients(false)}/>}
     </>
   );
 }
