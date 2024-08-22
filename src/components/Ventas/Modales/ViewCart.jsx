@@ -79,7 +79,7 @@ function ViewCart({ closeModal }) {
                         description={(
                           <>
                           <Flex>
-                          Cantidad {product.quantity}Uds - Precio: ${product.precio_unitario}
+                          Cantidad {product.quantity}Uds - Precio: {product.precio_unitario.toLocaleString("es-ES", { style: "currency", currency: "ARS" })}
                           <Button onClick={()=>handleDeleteProduct(product.id_producto)}><DeleteOutline/></Button>
                           </Flex>
                           </>
@@ -95,7 +95,7 @@ function ViewCart({ closeModal }) {
           <Card hoverable style={{ width: "100%" }}>
             <Meta
               title={(
-                <h1>Total: ${sumatoriaPrecio.toFixed(2)}</h1>
+                <h1>Total: ${sumatoriaPrecio.toLocaleString("es-ES", { style: "currency", currency: "ARS" })}</h1>
               )}
               description={(
                 <>

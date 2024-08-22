@@ -32,49 +32,73 @@ function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
     }
 
     const pageConfiguration = {
-        size: 5
+        pageSize: 6,
     }
 
-    const handlePushDebt = async(clientId) =>{
-        const values = {
-            clientId,
-            carrito, 
-            totalAdeudado
-        }
-        const today = getFullDate()
-        const existingDebt = debts.find(debts => debts.id_cliente === clientId)
-        if (existingDebt) {
-            const existingDate = new Date(existingDebt.fecha_deuda).toISOString().split("T")[0]
+    const handlePushDebt = async (clientId) => {
+        try {
+            const values = {
+                clientId,
+                carrito, 
+                totalAdeudado
+            };
             
-            if (existingDate === today) {
-                let existingDetalle = JSON.parse(existingDebt.detalle_deuda)
-                const updatedDetalle = [...existingDetalle, ...carrito]
-
-                const updatedTotal = existingDebt.total_adeudado + totalAdeudado
-                const updatedValues = {
-                    clientId,
-                    detalle_deuda: JSON.stringify(updatedDetalle),
-                    totalAdeudado: updatedTotal
-                };
-                setUpdatingDebt(true)
-                await updateDebt(updatedValues)
-                setUpdatingDebt(false)
-            }else{
-                setAddingDebt(true)
-                await addDebt(values)
-                setAddingDebt(false)
+            const today = new Date().toISOString().split("T")[0];
+            console.log("Fecha de hoy: ", today);
+            
+            const existingDebt = debts.find(debt => debt.id_cliente === clientId);
+            
+            if (existingDebt) {
+                const existingDate = new Date(existingDebt.fecha_deuda).toISOString().split("T")[0];
+                console.log("Fecha de la deuda", existingDate);
+    
+                // Comparar las fechas de forma robusta
+                if (existingDate === today) {
+                    console.log("Hay que actualizar");
+    
+                    const existingDetalle = JSON.parse(existingDebt.detalle_deuda);
+                    const updatedDetalle = [...existingDetalle, ...carrito]; 
+    
+                    const updatedTotal = existingDebt.total_adeudado + totalAdeudado;
+                    
+                    const updatedValues = {
+                        clientId,
+                        detalle_deuda: JSON.stringify(updatedDetalle),
+                        totalAdeudado: updatedTotal
+                    };
+    
+                    setUpdatingDebt(true);
+                    await updateDebt(updatedValues); // Manejo de actualización
+                    setUpdatingDebt(false);
+                    closeModal()
+    
+                } else {
+                    console.log("Hay que añadir otra deuda");
+    
+                    setAddingDebt(true);
+                    await addDebt(values); // Añadir nueva deuda
+                    setAddingDebt(false);
+                    closeModal()
+                }
+            } else {
+                console.log("Hay que añadir otra deuda");
+    
+                setAddingDebt(true);
+                await addDebt(values); // Añadir nueva deuda si no existe
+                setAddingDebt(false);
+                closeModal()
             }
-        }else{
-            setAddingDebt(true)
-            await addDebt(values)
-            setAddingDebt(false)
+    
+        } catch (error) {
+            console.error("Error al gestionar la deuda:", error);
         }
-      };
+    };
+    
       const [clientId, setId_cliente] = useState(null)
       const handleModalViewDebts = (id_cliente) =>{
-        console.log(id_cliente)
-        setOpenModalViewDebtsClients(!openModalViewDebtsClients)
         setId_cliente(id_cliente)
+        setOpenModalViewDebtsClients(true)
+        
       }
     return (
         <>
@@ -131,7 +155,7 @@ function ManageClients({ closeModal, addingDebt,carrito, totalAdeudado  }) {
                 </Table>
             </Modal>
 
-            {openModalViewDebtsClients && <ViewDebtsClients closeModal={handleModalViewDebts} clientId={clientId}/>}
+            {openModalViewDebtsClients && <ViewDebtsClients closeModal={()=> setOpenModalViewDebtsClients(false)} clientId={clientId}/>}
         </>
     )
 }

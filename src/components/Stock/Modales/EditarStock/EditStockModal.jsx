@@ -18,9 +18,9 @@ function EditStockModal({closeModal,selectedStock}) {
     const filteredProviders = proveedores.filter((prov) => prov.nombre_proveedor !== "proveedor_eliminado" && prov.proveedor_activo === true)
     const [values, setValues] = useState({
         id_producto: selectedStock.id_producto,
-        proveedor: selectedStock.nombre_proveedor === "proveedor_eliminado" && selectedStock.proveedor_activo === true ? "" : selectedStock.nombre_proveedor,
+        proveedor: selectedStock.nombre_proveedor === "proveedor_eliminado" && selectedStock.proveedor_activo === true ? "" : selectedStock.nombre_proveedor === "sin_proveedor" ? "Sin proveedor" : selectedStock.nombre_proveedor,
         id_proveedor: selectedStock.id_proveedor,
-        categoria: selectedStock.nombre_categoria,
+        categoria: selectedStock.nombre_categoria === "sin_categoria" ? "Sin categoria" : selectedStock.nombre_categoria === "categoria_eliminada" ? "Categoria Eliminada" : selectedStock.nombre_categoria,
         id_categoria: selectedStock.id_categoria,
         nombre_producto: selectedStock.nombre_producto,
         precio: selectedStock.precio_unitario,
@@ -154,7 +154,7 @@ function EditStockModal({closeModal,selectedStock}) {
                 >
                      {filteredCategories.map((category) => (
                             <Option key={category.id_categoria} value={category.id_categoria}>
-                                {category.nombre_categoria}
+                                {category.nombre_categoria === "sin_categoria" ? "Sin categoria" : category.nombre_categoria}
                             </Option>
                         ))}
                 </Select>
@@ -168,7 +168,7 @@ function EditStockModal({closeModal,selectedStock}) {
                 >
                     {filteredProviders.map((proveedor) => (
                             <Option key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
-                                {proveedor.nombre_proveedor}
+                                {proveedor.nombre_proveedor === "sin_proveedor" ? "Sin proveedor" : proveedor.nombre_proveedor}
                             </Option>
                         ))}
                 </Select>

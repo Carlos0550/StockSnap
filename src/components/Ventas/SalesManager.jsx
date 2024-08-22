@@ -38,9 +38,9 @@ function SalesManager() {
         .map(product => ({
             idCategoria: product.id_categoria,
             idProducto: product.id_producto,
-            Categoria: product.nombre_categoria,
+            Categoria: product.nombre_categoria === "sin_categoria" ? "Sin categoria" : product.nombre_categoria === "categoria_eliminada" ? "Categoria eliminada" : product.nombre_categoria,
             Producto: product.nombre_producto,
-            Precio: `$${product.precio_unitario} ARS`,
+            Precio: product.precio_unitario.toLocaleString("es-ES", { style: "currency", currency: "ARS" }),
             Stock: product.stock > 1 ? `${product.stock} unidades - packs` : `${product.stock} unidad - pack`,
         }));
 

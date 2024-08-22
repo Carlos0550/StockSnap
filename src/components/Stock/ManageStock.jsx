@@ -180,7 +180,7 @@ function ManageStock() {
                     >
                         {filteredCategories.map((category) => (
                             <Option key={category.id_categoria} value={category.id_categoria}>
-                                {category.nombre_categoria}
+                                {category.nombre_categoria === "sin_categoria" ? "Sin categoria" : category.nombre_categoria}
                             </Option>
                         ))}
                     </Select>
@@ -194,7 +194,7 @@ function ManageStock() {
                     >
                         {filteredProviders.map((proveedor) => (
                             <Option key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
-                                {proveedor.nombre_proveedor}
+                                {proveedor.nombre_proveedor === "sin_proveedor" ? "Sin proveedor" : proveedor.nombre_proveedor}
                             </Option>
                         ))}
                     </Select>

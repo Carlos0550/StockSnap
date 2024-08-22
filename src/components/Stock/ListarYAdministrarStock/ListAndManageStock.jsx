@@ -53,10 +53,10 @@ function ListAndManageStock() {
       .map((product, index) => ({
         key: index.toString(),
         id_producto: product.id_producto,
-        proveedor: product.nombre_proveedor === "proveedor_eliminado" ? "Proveedor desvinculado" : product.nombre_proveedor,
-        categoria: product.nombre_categoria === "categoria_eliminada" ? "Categoria desvinculada" : product.nombre_categoria,
+        proveedor: product.nombre_proveedor === "proveedor_eliminado" ? "Proveedor desvinculado" : product.nombre_proveedor === "sin_proveedor" ? "Sin proveedor" : product.nombre_proveedor,
+        categoria: product.nombre_categoria === "categoria_eliminada" ? "Categoria desvinculada" : product.nombre_categoria === "sin_categoria" ? "Sin categoria" : product.nombre_categoria,
         nombre_producto: product.nombre_producto,
-        precio: `$${product.precio_unitario}`,
+        precio: product.precio_unitario.toLocaleString("es-ES", { style: "currency", currency: "ARS" }),
         stock: product.stock
       }))
   }
@@ -87,7 +87,7 @@ function ListAndManageStock() {
             <Option value={null}>Todos los proveedores</Option>
             {proveedores.map((prov) => (
               <Option key={prov.id_proveedor} value={prov.id_proveedor}>
-                {prov.nombre_proveedor === "proveedor_eliminado" ? "Proveedores desvinculados/eliminados" : prov.nombre_proveedor}
+                {prov.nombre_proveedor === "proveedor_eliminado" ? "Proveedores desvinculados/eliminados" : prov.nombre_proveedor === "sin_proveedor" ? "Sin proveedor" : prov.nombre_proveedor}
               </Option>
             ))}
           </Select>
@@ -100,7 +100,7 @@ function ListAndManageStock() {
             <Option value={null}>Todas las categorias</Option>
             {categories.map((cat) => (
               <Option key={cat.id_categoria} value={cat.id_categoria}>
-                {cat.nombre_categoria === "categoria_eliminada" ? "Categorias desvinculados/eliminados" : cat.nombre_categoria}
+                {cat.nombre_categoria === "categoria_eliminada" ? "Categorias desvinculados/eliminados" : cat.nombre_categoria === "sin_categoria" ? "Sin categoria" : cat.nombre_categoria}
               </Option>
             ))}
           </Select>

@@ -60,6 +60,7 @@ function ListProviders({ handleToggleModal }) {
     data = filteredProviders
       .slice()
       .sort((a, b) => a.id_proveedor - b.id_proveedor)
+      .filter((prov)=> prov.nombre_proveedor !== "sin_proveedor")
       .map((provider, index) => {
         let contact = {};
 

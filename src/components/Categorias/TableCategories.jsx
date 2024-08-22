@@ -9,7 +9,7 @@ const { Search } = Input;
 
 function TableCategories() {
   const { categories, products, toggleCategories, deleteCategory } = useAppContext();
-  const filteredCategories = categories.filter((cat) => cat.nombre_categoria !== "categoria_eliminada");
+  const filteredCategories = categories.filter((cat) => cat.nombre_categoria !== "categoria_eliminada" && cat.nombre_categoria !== "sin_categoria");
   const [switchDisabled, setSwitchDisabled] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -66,7 +66,7 @@ function TableCategories() {
       .map((category, index) => ({
         key: index.toString(),
         idCategoria: category.id_categoria,
-        nombreCategoria: category.nombre_categoria,
+        nombreCategoria: category.nombre_categoria === "sin_categoria" ? "Sin categoria" : category.nombre_categoria,
         descripcion: category.descripcion,
         activo: category.categoria_activa,
       }));

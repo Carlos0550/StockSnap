@@ -199,6 +199,8 @@ export const AppContextProvider = ({ children }) => {
     };
 
     const fetchAllDebts = async () => {
+        setDebts([])
+
         try {
             const response = await axios.get("https://stocksnap-server.vercel.app/fetchAllDebts")
             if (response.status === 200) {
@@ -648,6 +650,7 @@ export const AppContextProvider = ({ children }) => {
                     console.log("Error actualizando producto:", error);
                     throw new Error("Error actualizando producto");
                 }
+                setCart([])
             }
 
             await fetchAll()
@@ -704,11 +707,25 @@ export const AppContextProvider = ({ children }) => {
         }
     };
 
+    const fetchAllRelationDebts = async () =>{
+        const hiddenMessage = message.loading("Aguarde...",0)
+        try {
+           await Promise.all[updateStockInDb(cart),fetchAllDebts()]
+           setViewDebtsClient([])
+           hiddenMessage()
+        } catch (error) {
+            console.log(error)
+            hiddenMessage()
+            message.error("Hubo un error al actualizar algún dato",3)
+        }
+    }
+
     const addDebt = async (values) => {
         try {
             const response = await axios.post("https://stocksnap-server.vercel.app/addDebt", { values });
             if (response.status === 200) {
-                await fetchAllDebts()
+                await fetchAllRelationDebts()
+                
                 return message.success(`${response.data.message}`, 3)
             } else if (response.status === 400) {
                 return message.error(`${response.data.message}`, 3)
@@ -722,9 +739,10 @@ export const AppContextProvider = ({ children }) => {
 
     const updateDebt = async (updatedValues) => {
         try {
-            const response = await axios.post("https://stocksnap-server.vercel.app/updateDebts", updatedValues);
+            const response = await axios.put("http://localhost:4000/updateDebts", updatedValues);
             if (response.status === 200) {
                 message.success(`${response.data.message}`,3)
+                await fetchAllRelationDebts()
                 return;
             }else{
                 message.error(`${response.data.message}`,4)
@@ -739,16 +757,17 @@ export const AppContextProvider = ({ children }) => {
 
 
     const fetchViewDebtsClients = async(id_cliente) =>{
+        setViewDebtsClient([])
         const hiddenMessage = message.loading("Trayendo vista de deudas...",0)
         try {
             const response = await axios.get(`http://localhost:4000/getViewDebts?id_cliente=${id_cliente}`)
-
             if (response.status === 200) {
                 hiddenMessage()
-                return setViewDebtsClient(response.data.data)
-            }else{
+                return setViewDebtsClient(response.data)
+            }else if(response.status === 400){
                 hiddenMessage()
-                return message.info("No existen deudas",3)
+                setViewDebtsClient([])
+                message.info("No existen deudas",3)
             }
         } catch (error) {   
             hiddenMessage()
