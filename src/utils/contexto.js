@@ -745,7 +745,7 @@ export const AppContextProvider = ({ children }) => {
         setViewDebtsClient([])
         const hiddenMessage = message.loading("Trayendo vista de deudas...",0)
         try {
-            const response = await axios.get(`http://localhost:4000/getViewDebts?id_cliente=${id_cliente}`)
+            const response = await axios.get(`https://stocksnap-server.vercel.app/getViewDebts?id_cliente=${id_cliente}`)
             if (response.status === 200) {
                 hiddenMessage()
                 return setViewDebtsClient(response.data)
@@ -763,7 +763,7 @@ export const AppContextProvider = ({ children }) => {
 
     const updateDebt = async (updatedValues) => {
         try {
-            const response = await axios.put("http://localhost:4000/updateDebts", updatedValues);
+            const response = await axios.put("https://stocksnap-server.vercel.app/updateDebts", updatedValues);
             if (response.status === 200) {
                 message.success(`${response.data.message}`,3)
                 await updateStockInDb(cart)
@@ -781,7 +781,7 @@ export const AppContextProvider = ({ children }) => {
     const makeDeliver = async (values, clientId) => {
         const serializedDelivers = JSON.stringify(values);
         try {
-            const response = await axios.post("http://localhost:4000/make-deliver", { clientId, serializedDelivers });
+            const response = await axios.post("https://stocksnap-server.vercel.app/make-deliver", { clientId, serializedDelivers });
     
             if (response.status === 200) {
                 message.success("Entrega guardada exitosamente")
@@ -815,7 +815,7 @@ export const AppContextProvider = ({ children }) => {
     };
     const updateDeliveries = async (values) => {
         try {
-            const response = await axios.put("http://localhost:4000/update-deliver", { values });
+            const response = await axios.put("https://stocksnap-server.vercel.app/update-deliver", { values });
     
             if (response.status === 200) {
                 message.success("Entrega actualizada exitosamente!");
@@ -838,7 +838,7 @@ export const AppContextProvider = ({ children }) => {
     const fetchAllDeliveries = async (idCliente) =>{
         setDeliversData([])
         try {
-            const response = await axios.get(`http://localhost:4000/getDeliveries?id_cliente=${idCliente}`)
+            const response = await axios.get(`https://stocksnap-server.vercel.app/getDeliveries?id_cliente=${idCliente}`)
             if (response.status === 200) {
                 setDeliversData(response.data)
                 return;
@@ -863,7 +863,7 @@ export const AppContextProvider = ({ children }) => {
     const deleteDebts = async(id_cliente) => {
         console.log(id_cliente);
         try {
-            const response = await axios.delete(`http://localhost:4000/deleteDebts?id_cliente=${id_cliente}`);
+            const response = await axios.delete(`https://stocksnap-server.vercel.app/deleteDebts?id_cliente=${id_cliente}`);
             
             if (response.status === 200) {
                 await Promise.all([fetchAllDebts(), fetchAllDeliveries(id_cliente)]);
