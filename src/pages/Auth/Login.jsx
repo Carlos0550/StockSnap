@@ -7,45 +7,39 @@ function Login() {
 const navigate = useNavigate()
 const alreadyShowMessage = useRef(false)
 useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token && !alreadyShowMessage.current) {
-      alreadyShowMessage.current = true;
+  const token = localStorage.getItem("token");
+  if (token && !alreadyShowMessage.current) {
+    alreadyShowMessage.current = true;
+    const hiddenMessage = message.loading("Aguarde...", 0);
 
-      const hiddenMessage = message.loading("Aguarde...", 0); // 0 para que no desaparezca automáticamente
+    (async () => {
+      try {
+        const response = await axios.post(
+          "https://stocksnap-server.vercel.app/validate-session",
+          { token },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        const { code } = response.data;
 
-      (async () => {
-        try {
-          const response = await axios.post(
-            "https://stocksnap-server.vercel.app/validate-session",
-            { token },
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-
-
-          const { code, user } = response.data;
-
-          if (code === 201) {
-            message.success("Sesión válida")
-            setTimeout(() => {
-                navigate("/home");
-            }, 1000);
-          } else if (code === 500) {
-            message.error("Error interno del servidor, por favor recargue la pagina",4);
-          } else if (code === 406) {
-            message.error("Sesión expirada");
-            
-          }
-        } catch (error) {
-          console.log(error)
-          
-        } finally {
-          hiddenMessage(); 
+        if (code === 201) {
+          message.success("Sesión válida");
+          setTimeout(() => navigate("/home"), 1000);
+        } else if (code === 406) {
+          message.error("Sesión expirada");
+        } else if (code === 500) {
+          message.error("Error interno del servidor, por favor recargue la pagina", 4);
         }
-      })();
-    } else if (!token && !alreadyShowMessage.current) {
-      message.error("No hay token disponible");
-    }
-  }, [navigate]);
+      } catch (error) {
+        console.error(error);
+        message.error("Error de conexión", 3);
+      } finally {
+        hiddenMessage();
+      }
+    })();
+  } else if (!token && !alreadyShowMessage.current) {
+    message.error("No hay token disponible");
+  }
+}, [navigate]);
 
 
     const [values, setValues] = useState({
@@ -62,34 +56,42 @@ useEffect(() => {
         }))
     }
     const [processing, setProcessing] = useState(false)
-    const handleSubmit = async(e) =>{
-        e.preventDefault()
-        const hiddenMessage = message.loading("Iniciando sesión",0)
-        setProcessing(true)
-        try {
-            const response = await axios.post("https://stocksnap-server.vercel.app/login", values)
-            const {token,user} = response.data
-            if (response.data?.code === 500) {
-                message.error("Error interno del servidor, por favor intente nuevamente",3)
-            }else if(response.data?.code === 400){
-                message.error("Usuario o contraseña incorrectos",3)
-            }else if(response.data?.code === 406){
-                message.error("El usuario o contraseña es inválido, por favor verifique que los campos esten correctos",3)
-            } else{
-                
-                localStorage.setItem('token',token)
-                message.success("Usuario logueado con exito")
-                navigate("/home")
-            }
-            
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const hiddenMessage = message.loading("Iniciando sesión", 0);
+      setProcessing(true);
+  
+      try {
+          const response = await axios.post("https://stocksnap-server.vercel.app/login", values);
+          const { code, token, user } = response.data;
+  
+          if (code === 500) {
+              message.error("Error interno del servidor, por favor intente nuevamente", 3);
+          } else if (code === 400) {
+              message.error("Usuario o contraseña incorrectos", 3);
+          } else if (code === 406) {
+              message.error("El usuario o contraseña es inválido, por favor verifique que los campos estén correctos", 3);
+          } else if (token) {
 
-        } catch (error) {
-
-        }finally{
-            hiddenMessage()
-            setProcessing(false)
-        }
-    }
+              localStorage.setItem('token', token);
+              message.success("Usuario logueado con éxito");
+              navigate("/home");
+          } else {
+              message.error("Respuesta inesperada del servidor", 3);
+          }
+  
+      } catch (error) {
+          console.error("Error en el inicio de sesión:", error);
+          if (error.response) {
+              message.error(`Error: ${error.response.data.message || "Desconocido"}`, 3);
+          } else {
+              message.error("Error de red o conexión", 3);
+          }
+      } finally {
+          hiddenMessage(); // Finalizar el mensaje de carga
+          setProcessing(false);
+      }
+  };
 
     // useEffect(()=>{
     //     console.log(values)
