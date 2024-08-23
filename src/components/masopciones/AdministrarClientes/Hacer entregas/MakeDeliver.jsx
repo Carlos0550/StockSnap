@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextField } from "@mui/material";
-import { Button, ConfigProvider, DatePicker, message } from 'antd';
+import { Button, ConfigProvider, DatePicker, message,Spin } from 'antd';
 import es_ES from 'antd/es/locale/es_ES';
 import "./makeDelivers.css";
 import { useAppContext } from '../../../../utils/contexto';
-
 function MakeDeliver({ totalAdeudado, clientId, entregasParseadas,closeComponent }) {
     const { makeDeliver, updateDeliveries } = useAppContext();
     const [parsedDeliveries, setParsedDeliveries] = useState([]);
@@ -68,10 +67,13 @@ function MakeDeliver({ totalAdeudado, clientId, entregasParseadas,closeComponent
         return valid;
     };
 
+    const [savingDelivery, setSavingDelivery] = useState(false)
     const handleSubmit = async () => {
+        setSavingDelivery(true)
         if (validateFields()) {
             if (!updateDeliver) {
                 await makeDeliver(valuesDelivery, clientId);
+                setSavingDelivery(false)
                 closeComponent()
             } else {
                
@@ -81,10 +83,12 @@ function MakeDeliver({ totalAdeudado, clientId, entregasParseadas,closeComponent
                     entregas: JSON.stringify(nuevasEntregas)
                 };
                 await updateDeliveries(datosActualizados);
+                setSavingDelivery(false)
                 closeComponent()
 
             }
         }
+        setSavingDelivery(false)
     };
     
 
@@ -115,8 +119,8 @@ function MakeDeliver({ totalAdeudado, clientId, entregasParseadas,closeComponent
                     )}
                 </ConfigProvider>
             </div>
-            <Button onClick={handleSubmit} className='btn__save-deliver'>
-                Guardar entrega
+            <Button onClick={handleSubmit} disabled={savingDelivery} className='btn__save-deliver'>
+                {savingDelivery ? <Spin/> : "Guardar entrega"}
             </Button>
         </div>
     );
