@@ -23,7 +23,7 @@ export const AppContextProvider = ({ children }) => {
     const [debts, setDebts] = useState([])
     const [widthValue, setWidthValue] = useState(window.innerWidth)
     const [viewDebtsClient, setViewDebtsClient] = useState([])
-
+    const [deliversData, setDeliversData] = useState([])
     const getFullDate = () => {
         const fechaActual = new Date();
         const dia = String(fechaActual.getDate()).padStart(2, '0');
@@ -214,6 +214,8 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+    
+
 
     const messageShowRef = useRef(false)
     const [sistemLoading, setSistemLoading] = useState(false)
@@ -227,7 +229,7 @@ export const AppContextProvider = ({ children }) => {
             fetchStockForSales(hiddenMessage),
             fetchSalesHistory(hiddenMessage),
             fetchAllClients(hiddenMessage),
-            fetchAllDebts()
+            fetchAllDebts(),
         ]);
         hiddenMessage()
     }
@@ -248,7 +250,7 @@ export const AppContextProvider = ({ children }) => {
                     fetchUsageDisk(hiddenMessage),
                     fetchSalesHistory(hiddenMessage),
                     fetchAllClients(hiddenMessage),
-                    fetchAllDebts()
+                    fetchAllDebts(),
                 ]);
 
                 hiddenMessage();
@@ -737,24 +739,7 @@ export const AppContextProvider = ({ children }) => {
 
     }
 
-    const updateDebt = async (updatedValues) => {
-        try {
-            const response = await axios.put("http://localhost:4000/updateDebts", updatedValues);
-            if (response.status === 200) {
-                message.success(`${response.data.message}`,3)
-                await fetchAllRelationDebts()
-                return;
-            }else{
-                message.error(`${response.data.message}`,4)
-                return
-            }
-        } catch (error) {
-            console.log(error);
-            message.error(`${error.response.data.message}`,4)
-            return;
-        }
-    };
-
+    
 
     const fetchViewDebtsClients = async(id_cliente) =>{
         setViewDebtsClient([])
@@ -776,6 +761,131 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
+    const updateDebt = async (updatedValues) => {
+        try {
+            const response = await axios.put("http://localhost:4000/updateDebts", updatedValues);
+            if (response.status === 200) {
+                message.success(`${response.data.message}`,3)
+                await updateStockInDb(cart)
+                return;
+            }else{
+                message.error(`${response.data.message}`,4)
+                return
+            }
+        } catch (error) {
+            console.log(error);
+            message.error(`${error.response.data.message}`,4)
+            return;
+        }
+    };
+    const makeDeliver = async (values, clientId) => {
+        const serializedDelivers = JSON.stringify(values);
+        try {
+            const response = await axios.post("http://localhost:4000/make-deliver", { clientId, serializedDelivers });
+    
+            if (response.status === 200) {
+                message.success("Entrega guardada exitosamente")
+                fetchAllDeliveries(clientId)
+                return;
+            } else {
+                console.warn("Se recibió una respuesta inesperada:", response);
+                message.warning(`Se recibio una respuesta inesperada, consulte la consola de desarrollador.`,4)
+                return;
+            }
+        } catch (error) {
+            if (error.response) {
+                console.error("Error en la respuesta del servidor:", error.response.data);
+                message.error("Error en la respuesta del servidor")
+                if (error.response.status === 406) {
+                    console.warn("Error: Ya existe una entrega con ese ID");
+                    message.error("Error: Ya existe una entrega con ese ID")
+                    return;
+                } else {
+                    console.error("Error inesperado:", error.response.data);
+                    message.error("Error inesperado, consulte la consola de desarrollador para más información",4)
+                    return;
+                }
+            } else {
+
+                console.error("Error en la solicitud:", error.message);
+                message.error("Error inesperado, consulte la consola de desarrollador para más información",4)
+                return;
+            }
+        }
+    };
+    const updateDeliveries = async (values) => {
+        try {
+            const response = await axios.put("http://localhost:4000/update-deliver", { values });
+    
+            if (response.status === 200) {
+                message.success("Entrega actualizada exitosamente!");
+                await fetchAllDeliveries(values.id_cliente)
+            } else {
+                const warningMessage = response.data.message || "No se realizaron cambios";
+                message.warning(`Advertencia: ${warningMessage}`);
+            }
+        } catch (error) {
+            if (error.response) {
+                const errorMessage = error.response.data.message || "Error al actualizar la entrega";
+                message.error(`Error de respuesta: ${errorMessage}`);
+            } else if (error.request) {
+                message.error("Error de solicitud: No se recibió respuesta del servidor");
+            } else {
+                message.error(`Error: ${error.message}`);
+            }
+        }
+    };
+    const fetchAllDeliveries = async (idCliente) =>{
+        setDeliversData([])
+        try {
+            const response = await axios.get(`http://localhost:4000/getDeliveries?id_cliente=${idCliente}`)
+            if (response.status === 200) {
+                setDeliversData(response.data)
+                return;
+            }else{
+                message.warning("Hubo un error al traer todas las entregas de la base de datos",3)
+                return;
+            }
+        } catch (error) {
+            console.log(error)
+            if (error.response) {
+                console.warn(error.response)
+                message.error("Error en la respuesta del servidor",3)
+                return;
+            }else{
+                message.error("Hubo un problema de conexión y no se pudieron traer las entregas de la base de datos",4)
+                return;
+            }
+        }
+    }
+
+    
+    const deleteDebts = async(id_cliente) => {
+        console.log(id_cliente);
+        try {
+            const response = await axios.delete(`http://localhost:4000/deleteDebts?id_cliente=${id_cliente}`);
+            
+            if (response.status === 200) {
+                await Promise.all([fetchAllDebts(), fetchAllDeliveries(id_cliente)]);
+                message.success("Deudas canceladas exitosamente!", 3);
+            } else if (response.status === 404) {
+                message.warning("No se encontraron deudas o entregas para eliminar", 3);
+            }
+        } catch (error) {
+            console.log(error);
+            
+            if (error.response) {
+                if (error.response.status === 500) {
+                    message.error("Error interno del servidor, por favor intente nuevamente", 3);
+                } else {
+                    message.error("Hubo un error desconocido, por favor recargue la página e intente nuevamente", 3);
+                }
+            } else {
+                message.error("Error de conexión", 3);
+            }
+        }
+    };
+    
 
 
     return (
@@ -787,8 +897,8 @@ export const AppContextProvider = ({ children }) => {
             stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed, updateStockInDb,
             spaceDisk,widthValue,
             salesHistory,
-            createCLients, clients,
-            addDebt,getFullDate, debts,updateDebt,fetchViewDebtsClients, viewDebtsClient
+            createCLients, clients,deleteDebts,
+            addDebt,getFullDate, debts,updateDebt,fetchViewDebtsClients, viewDebtsClient,makeDeliver, fetchAllDeliveries, deliversData,updateDeliveries
         }}>
             {children}
             {purchaseSuccess && (
