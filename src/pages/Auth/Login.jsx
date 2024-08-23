@@ -64,7 +64,6 @@ useEffect(() => {
       try {
           const response = await axios.post("https://stocksnap-server.vercel.app/login", values);
           const { code, token, user } = response.data;
-          console.log(response.data)
           if (code === 500) {
               message.error("Error interno del servidor, por favor intente nuevamente", 3);
           } else if (code === 400) {
