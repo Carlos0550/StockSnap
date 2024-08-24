@@ -1,7 +1,7 @@
 import { Collapse } from 'antd'
 import React, { useEffect, useState } from 'react'
 import ShowDIskInfo from './MostrarInfoDisco/ShowDIskInfo'
-import SalesHistoryModal from './Modales/SalesHistoryModal'
+import SalesHistoryModal from './Modales/Historial de ventas/SalesHistoryModal'
 import CreateClients from './AdministrarClientes/CrearClientes/CreateClients'
 import ManageClients from './AdministrarClientes/AdministrarClientes/ManageClients'
 
