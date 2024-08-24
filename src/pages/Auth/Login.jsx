@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {message, Spin} from "antd"
+import {message, Skeleton, Spin} from "antd"
 import axios from "axios"
 import "./login.css"
 import {useNavigate} from "react-router-dom"
 function Login() {
 const navigate = useNavigate()
 const alreadyShowMessage = useRef(false)
+const [isLoading, setIsLoading] = useState(false)
 useEffect(() => {
   const token = localStorage.getItem("token");
   if (token && !alreadyShowMessage.current) {
@@ -14,6 +15,7 @@ useEffect(() => {
 
     (async () => {
       try {
+        setIsLoading(true)
         const response = await axios.post(
           "https://stocksnap-server.vercel.app/validate-session",
           { token },
@@ -23,6 +25,7 @@ useEffect(() => {
 
         if (code === 201) {
           message.success("Sesión válida");
+          setIsLoading(false)
           setTimeout(() => navigate("/home"), 1000);
         } else if (code === 406) {
           message.error("Sesión expirada");
@@ -30,10 +33,17 @@ useEffect(() => {
           message.error("Error interno del servidor, por favor recargue la pagina", 4);
         }
       } catch (error) {
-        console.error(error);
+        if (error.response) {
+          if (error.response.data.code === 406) {
+            message.error("Sesión inválida")
+          }
+        }else{
+          console.error(error);
         message.error("Error de conexión", 3);
+        }
       } finally {
         hiddenMessage();
+        setIsLoading(false)
       }
     })();
   } else if (!token && !alreadyShowMessage.current) {
@@ -99,7 +109,8 @@ useEffect(() => {
     <>
         <div className="form-wrapper">
             <form className='form-login'>
-                <label htmlFor="email">Ingrese su correo: 
+                {isLoading ? <Skeleton/> : <>
+                  <label htmlFor="email">Ingrese su correo: 
                     <input 
                     type="text" 
                     id='email' 
@@ -118,6 +129,7 @@ useEffect(() => {
                     onChange={handleChange}/>
                 </label>
                 <button disabled={processing} onClick={handleSubmit}>{processing ? <Spin/> : "Iniciar sesión"}</button>
+                </>}
             </form>
         </div>
     </>
