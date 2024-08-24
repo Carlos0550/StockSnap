@@ -3,7 +3,7 @@ import axios from "axios";
 
 async function fetchAllDeliveriesClients() {
     try {
-        const response = await axios.get("http://localhost:4000/getDeliveries")
+        const response = await axios.get("https://stocksnap-server.vercel.app/getDeliveries")
         if (response.status === 200) {
             return response.data
         }else{
