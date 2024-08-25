@@ -7,7 +7,7 @@ import ManageClients from '../../masopciones/AdministrarClientes/AdministrarClie
 const { Meta } = Card;
 
 function ViewCart({ closeModal }) {
-  const { cart, completeCashSale, updateStockInDb,setCart } = useAppContext();
+  const { cart, completeCashSale, updateStockInDb, setCart } = useAppContext();
   const [openSectionCreateClient, setOpenSectionCreateClient] = useState(false)
   const [OpenSectionShowAllClients, setOpenSectionShowAllClients] = useState(false)
 
@@ -27,7 +27,7 @@ function ViewCart({ closeModal }) {
   const handleFinnalyPurchase = async (type) => {
     setProcessingPurchase(true)
     if (type === "efectivo") {
-      const response = await completeCashSale("efectivo",sumatoriaPrecio)
+      const response = await completeCashSale("efectivo", sumatoriaPrecio)
       setProcessingPurchase(false)
 
       if (response.code === 201) {
@@ -35,7 +35,7 @@ function ViewCart({ closeModal }) {
         closeModal()
       }
     } else if (type === "mp") {
-      const response = await completeCashSale("mercadopago/transferencia",sumatoriaPrecio)
+      const response = await completeCashSale("mercadopago/transferencia", sumatoriaPrecio)
       setProcessingPurchase(false)
       if (response.code === 201) {
         await updateProductsBeforeShop()
@@ -44,16 +44,16 @@ function ViewCart({ closeModal }) {
     }
   }
 
-  const handleDeleteProduct = (idProd) =>{
-      setCart(cart.filter((prod)=> prod.id_producto !== idProd))      
+  const handleDeleteProduct = (idProd) => {
+    setCart(cart.filter((prod) => prod.id_producto !== idProd))
   }
 
-  
-  const toggleShowClients = () =>{
+
+  const toggleShowClients = () => {
     setOpenSectionShowAllClients(!OpenSectionShowAllClients)
   }
 
-  
+
   return (
     <>
       <Modal
@@ -67,28 +67,26 @@ function ViewCart({ closeModal }) {
         <Flex vertical gap="small" >
           <div className="products__cart-container">
             {chunkedCart.map((pair, index) => (
-              <Row gutter={[16, 16]} key={index} justify="center">
-                {pair.map((product, idx) => (
-                  <Col span={12} key={idx}>
-                    <Card
-                      hoverable
-                      style={{ width: '100%' }}
-                    >
-                      <Meta
-                        title={product.nombre_producto}
-                        description={(
-                          <>
-                          <Flex>
+              pair.map((product, idx) => (
+                <Card
+                  hoverable
+                  style={{ width: '100%', border: "2px solid #ccc" }}
+                  className='card__product'
+                  key={idx}
+                >
+                  <Meta
+                    title={product.nombre_producto}
+                    description={(
+                      <>
+                        <div className="card-details">
                           Cantidad {product.quantity}Uds - Precio: {product.precio_unitario.toLocaleString("es-ES", { style: "currency", currency: "ARS" })}
-                          <Button onClick={()=>handleDeleteProduct(product.id_producto)}><DeleteOutline/></Button>
-                          </Flex>
-                          </>
-                        )}
-                      />
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
+                          <Button type='primary' danger onClick={() => handleDeleteProduct(product.id_producto)}><DeleteOutline /></Button>
+                        </div>
+                      </>
+                    )}
+                  />
+                </Card>
+              ))
             ))}
           </div>
 
@@ -99,12 +97,12 @@ function ViewCart({ closeModal }) {
               )}
               description={(
                 <>
-                  <Flex gap="small" vertical>
-                    <Button type='primary' danger disabled={processingPurchase || sumatoriaPrecio == 0} onClick={()=> setCart([])}>Limpiar carrito <CleaningServices /></Button>
+                  <div className="action-btns-container">
+                    <Button type='primary' danger disabled={processingPurchase || sumatoriaPrecio == 0} onClick={() => setCart([])}>Limpiar carrito <CleaningServices /></Button>
                     <Button type='primary' onClick={() => handleFinnalyPurchase("efectivo")} disabled={processingPurchase || sumatoriaPrecio == 0}>{processingPurchase ? <Spin /> : (<>Concretar venta en efectivo <MoneyRounded /></>)}</Button>
                     <Button type='primary' disabled={processingPurchase || sumatoriaPrecio == 0} onClick={() => handleFinnalyPurchase("mp")}>Concretar venta Mercado Pago/Transferencia <AddCardOutlined /></Button>
-                    <Button type='primary' disabled={sumatoriaPrecio == 0} onClick={toggleShowClients} >Anotar a cuenta corriente <AppRegistrationRounded/></Button>
-                  </Flex>
+                    <Button type='primary' disabled={sumatoriaPrecio == 0} onClick={toggleShowClients} >Anotar a cuenta corriente <AppRegistrationRounded /></Button>
+                  </div>
 
                 </>
               )}
@@ -114,7 +112,7 @@ function ViewCart({ closeModal }) {
         </Flex>
       </Modal>
 
-    {OpenSectionShowAllClients && <ManageClients carrito={cart} totalAdeudado={sumatoriaPrecio} addingDebt={true} closeModal={()=> setOpenSectionShowAllClients(false)}/>}
+      {OpenSectionShowAllClients && <ManageClients carrito={cart} totalAdeudado={sumatoriaPrecio} addingDebt={true} closeModal={() => setOpenSectionShowAllClients(false)} />}
     </>
   );
 }
