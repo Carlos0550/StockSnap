@@ -3,12 +3,13 @@ import { Card, Row, Col, Table, Typography, Switch, Tag, Tooltip } from 'antd';
 import { useAppContext } from '../../../utils/contexto';
 import dayjs from 'dayjs';
 import fetchAllDeliveriesClients from './FetchDelivers';
+import Search from 'antd/es/transfer/search';
 const { Title } = Typography;
 
 export default function AnaliticsDashboard() {
   const { clients, debts } = useAppContext();
   const [delivers, setDelivers] = useState([])
-
+  const [searchText, setSearchText] = useState("")
   const parseContact = (contact) => {
     try {
       return JSON.parse(contact);
@@ -103,16 +104,19 @@ export default function AnaliticsDashboard() {
   };
   
 
-
   const formatDate = (date) => {
     return date !== "" ? dayjs(date).format('DD/MM/YYYY') : 'N/A';
   };
+
+  const filteredClients = getClientsData().filter(client =>
+    client.name.toLowerCase().includes(searchText.toLowerCase())
+  )
 
   const columns = [
     {
       title: 'Nombre',
       dataIndex: 'name',
-      key: 'name',
+      key: 'name'
     },
     {
       title: 'Deuda',
@@ -170,9 +174,16 @@ export default function AnaliticsDashboard() {
         <Col span={24}>
           <Card
             title="Todos los clientes"
+            extra={(
+              <Search
+              onChange={(e)=> setSearchText(e.target.value)}
+              placeholder='Busca un cliente especifico'
+              
+              />
+            )}
           >
             <Table
-              dataSource={getClientsData()}
+              dataSource={filteredClients}
               columns={columns}
               pagination={{ pageSize: 5 }}
               scroll={{ x: 500 }}
