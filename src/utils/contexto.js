@@ -885,6 +885,27 @@ export const AppContextProvider = ({ children }) => {
             }
         }
     };
+
+    const deleteIndividualDebts = async (id_deuda) => {
+        try {
+            const response = await axios.delete(`http://localhost:4000/deleteIndividualDebts?id_deuda=${id_deuda}`);
+            
+            if (response.status === 200) {
+                message.success("Deuda eliminada");
+            } else if (response.status === 406) {
+                message.error("No se pudo encontrar la deuda para eliminar");
+            } else {
+                message.error("Hubo un error al intentar eliminar esta deuda");
+            }
+        } catch (error) {
+            if (error.response) {
+                message.error("Error del servidor al intentar eliminar la deuda");
+            } else {
+                message.error("Error de red: No se pudo eliminar la deuda");
+            }
+        }
+    };
+    
     
 
 
@@ -897,8 +918,9 @@ export const AppContextProvider = ({ children }) => {
             stockForSales, setCart, cart, setStockForSales, completeCashSale, purchaseSuccess, setPurchaseSuccess, setPurchaseFailed, purchaseFailed, updateStockInDb,
             spaceDisk,widthValue,
             salesHistory,
-            createCLients, clients,deleteDebts,
-            addDebt,getFullDate, debts,updateDebt,fetchViewDebtsClients, viewDebtsClient,makeDeliver, fetchAllDeliveries, deliversData,updateDeliveries
+            createCLients, clients,
+            addDebt,getFullDate, debts,updateDebt,deleteDebts, deleteIndividualDebts,
+            fetchViewDebtsClients, viewDebtsClient,makeDeliver, fetchAllDeliveries, deliversData,updateDeliveries,
         }}>
             {children}
             {purchaseSuccess && (
