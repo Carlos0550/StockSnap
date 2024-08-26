@@ -888,7 +888,7 @@ export const AppContextProvider = ({ children }) => {
 
     const deleteIndividualDebts = async (id_deuda) => {
         try {
-            const response = await axios.delete(`http://localhost:4000/deleteIndividualDebts?id_deuda=${id_deuda}`);
+            const response = await axios.delete(`https://stocksnap-server.vercel.app/deleteIndividualDebts?id_deuda=${id_deuda}`);
             
             if (response.status === 200) {
                 message.success("Deuda eliminada");
