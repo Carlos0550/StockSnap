@@ -235,7 +235,7 @@ export const AppContextProvider = ({ children }) => {
     }
     const location = useLocation()
     useEffect(() => {
-        if (location.pathname == "/home") {
+        if (location.pathname === "/home") {
             (async () => {
                 if (messageShowRef.current) return;
                 setSistemLoading(true);
@@ -712,7 +712,7 @@ export const AppContextProvider = ({ children }) => {
     const fetchAllRelationDebts = async () =>{
         const hiddenMessage = message.loading("Aguarde...",0)
         try {
-           await Promise.all[updateStockInDb(cart),fetchAllDebts()]
+           await Promise.all([updateStockInDb(cart),fetchAllDebts()])
            setViewDebtsClient([])
            hiddenMessage()
         } catch (error) {
