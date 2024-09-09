@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../utils/contexto";
 import { processDataSales } from "./processDataSales";
-
+import { columnsTableSales } from "./processDataSales";
 import {
-  ShoppingCartOutlined,
   LogoutOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
@@ -21,12 +20,13 @@ import {
 import "./home.css";
 import { Link, Route, Routes } from "react-router-dom";
 import StockAndCategoriesManager from "../Stock y categorias/StockAndCategoriesManager";
+import Search from "antd/es/transfer/search";
 const { Header, Content } = Layout;
 
 function Home() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { userInfo, checkSession, fetchAllResources,vistaVentas } = useAppContext();
-
+  const [searchText, setSearchText] = useState("")
 
   const alreadyFetch = useRef(false);
   useEffect(() => {
@@ -48,16 +48,22 @@ function Home() {
     setDrawerVisible(false);
   };
 
-  // const processedSalesData = 
-  console.log(processDataSales(vistaVentas))
+  const processedSalesData = processDataSales(vistaVentas)
+  const filteredSalesData = processedSalesData
+  .filter(item => item.nombre.toLowerCase().includes(searchText.toLowerCase()))
 
   const renderMainComponent = () => {
     return (
-      <div className="site-layout-content" style={{ margin: "16px 0" }}>
+      <div style={{ margin: "16px 0" }}>
         <Row gutter={16}>
           <Col span={16}>
             <Card title="Stock para Ventas">
-              <Table columns={[]} dataSource={[]} />
+              <Search
+              placeholder="Buscá rápido un producto"
+              onChange={(val) => setSearchText(val.target.value)}
+              handleClear={()=>setSearchText("")}
+              />
+              <Table columns={columnsTableSales} style={{marginTop: ".5rem"}} dataSource={filteredSalesData} />
             </Card>
           </Col>
           <Col span={8}>
