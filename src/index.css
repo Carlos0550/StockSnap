@@ -9,7 +9,7 @@
 
 body{
     background-color: #ffffff;
-   
+    overflow: hidden;
 }
 
 .flex-cont{

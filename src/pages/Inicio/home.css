@@ -1,0 +1,23 @@
+.hamburguer__icon {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .menu__desktop {
+        display: none;
+    }
+    .btn__closeSession-desktop {
+        display: none;
+    }
+    .hamburguer__icon {
+        display: inline;
+    }
+    .header {
+        justify-content: left;
+    }
+}
+
+.menu__item {
+    font-size: large;
+    font-weight: bold;
+}

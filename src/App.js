@@ -1,14 +1,14 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home/Home";
-import Login from "./pages/Auth/Login";
-
+import Login from "./pages/Login/Login";
+import Home from "./pages/Inicio/Home";
+import StockAndCategoriesManager from "./pages/Stock y categorias/StockAndCategoriesManager";
 function App() {
   return (
     <>
-    <Routes>
-      <Route path="/" element={<Login/>}/>
-      <Route path="/home" element={<Home/>}/>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/home/*" element={<Home/>}/>
+      </Routes>
     </>
   );
 }
