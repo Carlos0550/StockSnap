@@ -39,6 +39,7 @@ export const AppContextProvider = ({ children }) => {
   const [deuda_clientes, setDeudaClientes] = useState([])
   const [vistaProductos, setVistaProductos] = useState([])
   const [vistaVentas, setVistaVentas] = useState([])
+  const [cart, setCart] = useState([])
 
   const loginUser = async (values) => {
     const hiddenMessage = message.loading("Aguarde...");
@@ -172,7 +173,9 @@ export const AppContextProvider = ({ children }) => {
         clientes,
         deuda_clientes,
         vistaProductos,
-        vistaVentas
+        vistaVentas,
+        cart, 
+        setCart
       }}
     >
       {children}

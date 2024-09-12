@@ -9,10 +9,16 @@
 
 body{
     background-color: #ffffff;
-    overflow: hidden;
+    overflow:auto;
 }
 
 .flex-cont{
     display: flex;
     gap: 1rem;
+}
+.divider{
+    border: 1px solid #ccc;
+    height: min-content;
+    max-height: min-content;
+    margin: .2rem;
 }

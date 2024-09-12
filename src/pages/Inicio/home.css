@@ -2,6 +2,16 @@
     display: none;
 }
 
+.sales__container{
+    overflow-y: scroll;
+    max-height: 60vh;
+}
+
+.cart__container{
+    overflow-y: scroll;
+    max-height: 42vh;
+}
+
 @media (max-width: 800px) {
     .menu__desktop {
         display: none;
