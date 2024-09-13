@@ -166,6 +166,7 @@ export const AppContextProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
+        getFullDate,
         loginUser,
         checkSession,
         userInfo,
