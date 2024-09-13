@@ -6,7 +6,8 @@ import {
   MenuOutlined,
   ShoppingCartOutlined,
   DeleteOutlined,
-  EditOutlined
+  MinusCircleOutlined,
+  PlusCircleOutlined
 } from "@ant-design/icons";
 import {
   Layout,
@@ -25,12 +26,14 @@ import "./home.css";
 import { Link, Route, Routes } from "react-router-dom";
 import StockAndCategoriesManager from "../Stock y categorias/StockAndCategoriesManager";
 import Search from "antd/es/transfer/search";
-import SetQuantityModal from "./Modales/SetQuantityModal";
+import SetQuantityModal from "./Modales/Seteador de Cantidad/SetQuantityModal";
+import { cartSum } from "./processDataSales";
+import MakeSale from "./Modales/Concretar Venta/MakeSale";
 const { Header, Content } = Layout;
 
 function Home() {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const { userInfo, checkSession, fetchAllResources,vistaVentas, cart } = useAppContext();
+  const { userInfo, checkSession, fetchAllResources,vistaVentas, cart, setCart } = useAppContext();
   const [searchText, setSearchText] = useState("")
   const alreadyFetch = useRef(false);
   useEffect(() => {
@@ -63,7 +66,6 @@ function Home() {
     setSelectedProduct(filteredSalesData.find(prod => prod.idProducto === idProduct))
     setOpenSetterQuantityModal(true)
   }
-  console.log(cart)
 
  const columnsTableSales = [
     {
@@ -93,8 +95,37 @@ function Home() {
             </>
         )
     },
-    
 ]
+
+const handleDeleteItemCart = (idx) => {
+  if (idx) {
+    let cloneCart = [...cart]
+    const newCart = cloneCart.filter(itm => itm.idProducto !== idx)
+    setCart(newCart)
+  };
+};
+
+const handleAddOne = (id) =>{
+  let cloneCart = [...cart]
+  let itemToAdd = cloneCart.find(itm => itm.idProducto === id)
+  if (itemToAdd) {
+    itemToAdd.quantity += 1
+  }
+  setCart(cloneCart)
+}
+
+const substractOne = (id) =>{
+  let cloneCart = [...cart]
+  let itemToSubstract = cloneCart.find(itm => itm.idProducto === id)
+  if (itemToSubstract.quantity === 1) {
+    handleDeleteItemCart(id)
+  }else{
+    itemToSubstract.quantity -= 1
+    setCart(cloneCart)
+  }
+}
+
+const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
 
   const renderMainComponent = () => {
     return (
@@ -133,13 +164,16 @@ function Home() {
                   <p>{item.quantity} {item.nombre}</p>
                   {""}
                   <p>${item.precio} c/u</p>
-                  <Button><DeleteOutlined /></Button> {" "} <Button><EditOutlined/></Button>
+                  <Button type="primary" danger onClick={()=> handleDeleteItemCart(item.idProducto)}><DeleteOutlined /></Button> {" "} 
+                  <Button danger onClick={()=> substractOne(item.idProducto)}><MinusCircleOutlined /></Button> {" "}
+                  <Button type="primary" onClick={()=> handleAddOne(item.idProducto)}><PlusCircleOutlined /></Button>
                   <div className="divider"></div>
                 </>
               ))}
+              <h2>Total: ${cartSum(cart).toLocaleString("es-ES")}</h2>
               <Flex gap="small" vertical>
-              <Button >Concretar venta</Button>
-              <Button>Borrar carrito</Button>
+                <Button onClick={()=>setOpenMakeSaleModal(true)}>Concretar venta</Button>
+                <Button>Borrar carrito</Button>
               </Flex>
             </Card>
           </Col>
@@ -231,6 +265,7 @@ function Home() {
         </Routes>
       </Content>
       {openSetterQuantityModal && <SetQuantityModal closeModal={()=> setOpenSetterQuantityModal(false)} selectedProduct={selectedProduct}/>}
+      {openMakeSaleModal && <MakeSale closeModal={()=> setOpenMakeSaleModal(false)}/>}
     </Layout>
   );
 }

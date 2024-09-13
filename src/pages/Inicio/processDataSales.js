@@ -8,5 +8,19 @@ export const processDataSales = (vistaVentas) =>{
     }))
 }
 
+export const cartSum = (cart) => {
+    console.log(cart);
+    if (cart.length > 0) {
+        const total = cart.reduce((acc, item) => {
+            return acc + parseFloat(item.precio) * parseInt(item.quantity);
+        }, 0);
+        console.log(total);
+        return total
+    } else {
+        return 0; 
+    }
+};
+
+
 
 
