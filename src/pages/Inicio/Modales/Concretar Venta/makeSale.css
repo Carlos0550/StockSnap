@@ -1,0 +1,9 @@
+.paymentMethods__wrapper{
+    display: flex;
+    gap: .5rem;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    max-width: 80%;
+    margin: 0 auto;
+    margin-top: 1rem;
+}
