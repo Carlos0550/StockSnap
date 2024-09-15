@@ -172,8 +172,8 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
               ))}
               <h2>Total: ${cartSum(cart).toLocaleString("es-ES")}</h2>
               <Flex gap="small" vertical>
-                <Button onClick={()=>setOpenMakeSaleModal(true)}>Concretar venta</Button>
-                <Button>Borrar carrito</Button>
+                <Button onClick={()=>setOpenMakeSaleModal(true)} disabled={cart.length === 0}>Concretar venta</Button>
+                <Button disabled={cart.length === 0}>Borrar carrito</Button>
               </Flex>
             </Card>
           </Col>
