@@ -1,5 +1,8 @@
 export const processDataSales = (vistaVentas) =>{
-    return vistaVentas.map((item,index)=>({
+    return vistaVentas
+    .filter(itm => itm.stock > 0)
+    .sort((a,b) => a.id_producto - b.id_producto)
+    .map((item,index)=>({
         idProducto: item.id_producto,
         nombre: item.nombre_producto,
         categoria: item.nombre_categoria,
