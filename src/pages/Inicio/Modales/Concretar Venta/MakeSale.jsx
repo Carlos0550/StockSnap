@@ -1,5 +1,5 @@
-import { Button, Flex, message, Modal } from 'antd'
-import React from 'react'
+import { Button, Flex, message, Modal, Result } from 'antd'
+import React, { useState } from 'react'
 import "./makeSale.css"
 import { PagoDinero } from '../../../../utils/SVGs/PagoDinero'
 import { CreditCard } from '../../../../utils/SVGs/CreditCard'
@@ -8,16 +8,24 @@ import {useAppContext} from "../../../../utils/contexto"
 import { cartSum } from '../../processDataSales'
 import axios from 'axios'
 function MakeSale({closeModal}) {
-  const { cart,getFullDate } = useAppContext()
+  const { cart,getFullDate, setCart } = useAppContext()
+  const [showSuccess, setShowSuccess] = useState(false) 
+  const [idVenta, setIdVenta] = useState(null) 
+
   let total = cartSum(cart)
   const handleMakeSale = async(method) => {
     const hiddenMessage = message.loading("Aguarde...")
     const fecha = getFullDate.format("YYYY-MM-DD")
     try {
       const response = await axios.post("http://localhost:4000/make-sale",{fecha,total, method, cart})
+      console.log(response)
+      setIdVenta(response.data.id_venta)
       if (response.status === 200) {
         hiddenMessage()
         message.success("Venta guardada exitosamente!")   
+        setShowSuccess(true)
+        setCart([])
+        
       }else{
         message.error(`${response.data.message}`)
       }
@@ -38,18 +46,32 @@ function MakeSale({closeModal}) {
         open={true}
         closeIcon={false}
         footer={[
-            <Button onClick={closeModal} type='primary' danger>Cancelar</Button>
+            showSuccess ? "" : <Button onClick={closeModal} type='primary' danger >Cancelar</Button>
         ]}
-        title="Seleccione el metodo de pago"
-        ><>
-        <h3>Total ${total.toLocaleString("es-ES")}</h3>
+        title={!showSuccess && "Seleccione el metodo de pago"}
+        >
+            {!showSuccess && <>
+            <h3>Total ${total.toLocaleString("es-ES")}</h3>
             <div className='paymentMethods__wrapper'>
                 <Button onClick={()=>handleMakeSale("Efectivo")}>Efectivo <PagoDinero/></Button>
                 <Button onClick={()=>handleMakeSale("Crédito")}>Crédito <CreditCard/></Button>
                 <Button onClick={()=>handleMakeSale("Débito")}>Débito <CreditCard/></Button>
                 <Button onClick={()=>handleMakeSale("Transferéncia")}>Transferencia <Transaction/></Button>
             </div>
-            </>
+            </>}
+            {showSuccess && <Result
+            status={'success'}
+            title="Venta realizada correctamente!"
+            subTitle={
+              <>
+                <strong>ID de venta: {idVenta}</strong> <br />
+                <strong>Encontrará esta venta en su historial de ventas!</strong> 
+              </>
+            }
+            extra={[
+              <Button type='primary' danger onClick={()=> closeModal()}>Cerrar</Button>
+            ]}
+            />}
         </Modal>
     </>
   )
