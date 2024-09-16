@@ -28,8 +28,8 @@ import Search from "antd/es/transfer/search";
 import SetQuantityModal from "./Modales/Seteador de Cantidad/SetQuantityModal";
 import { cartSum } from "./processDataSales";
 import MakeSale from "./Modales/Concretar Venta/MakeSale";
-import Stock from "../Stock/StockManager";
-import StockManager from "../Stock/StockManager";
+import Stock from "../../utils/StockManager";
+import StockManager from "../../utils/StockManager";
 import ProvidersManager from "../Proveedores/ProvidersManager";
 const { Header, Content } = Layout;
 
