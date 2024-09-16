@@ -24,16 +24,18 @@ import {
 } from "antd";
 import "./home.css";
 import { Link, Route, Routes } from "react-router-dom";
-import StockAndCategoriesManager from "../Stock y categorias/StockAndCategoriesManager";
 import Search from "antd/es/transfer/search";
 import SetQuantityModal from "./Modales/Seteador de Cantidad/SetQuantityModal";
 import { cartSum } from "./processDataSales";
 import MakeSale from "./Modales/Concretar Venta/MakeSale";
+import Stock from "../Stock/StockManager";
+import StockManager from "../Stock/StockManager";
+import ProvidersManager from "../Proveedores/ProvidersManager";
 const { Header, Content } = Layout;
 
 function Home() {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const { userInfo, checkSession, fetchAllResources,vistaVentas, cart, setCart } = useAppContext();
+  const { userInfo, checkSession, fetchAllResources,productos, cart, setCart } = useAppContext();
   const [searchText, setSearchText] = useState("")
   const alreadyFetch = useRef(false);
   useEffect(() => {
@@ -55,9 +57,8 @@ function Home() {
     setDrawerVisible(false);
   };
 
-  const processedSalesData = processDataSales(vistaVentas)
-  const filteredSalesData = processedSalesData
-  .filter(item => item.nombre.toLowerCase().includes(searchText.toLowerCase()))
+  const processedSalesData = processDataSales(productos)
+  const filteredSalesData = processedSalesData.filter(item => item.nombre.toLowerCase().includes(searchText.toLowerCase()))
 
   const [openSetterQuantityModal, setOpenSetterQuantityModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -130,9 +131,9 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
   const renderMainComponent = () => {
     return (
       <div style={{ margin: "16px 0" }}>
-        <Row gutter={[16,16]}>
-          <Col xs={24} sm={24} md={16} lg={16} xl={16}>
-            <Card title="Stock para Ventas" >
+        <Row gutter={15}>
+          <Col xs={24} sm={24} md={16} lg={16} xl={16} >
+            <Card title="Stock para Ventas" style={{minWidth: "100%"}} >
               <Search
               placeholder="Buscá rápido un producto"
               onChange={(val) => setSearchText(val.target.value)}
@@ -146,18 +147,7 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
             </Card>
           </Col>
           <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-            <Card title="Estado de Clientes">
-              <Statistic
-                title="Clientes con deudas vencidas"
-                // value={clientDebts.overdue.length}
-                style={{ marginBottom: "20px" }}
-              />
-              <Statistic
-                title="Clientes al día"
-                // value={clientDebts.upToDate}
-                style={{ marginTop: "20px" }}
-              />
-            </Card>
+            
             <Card title="Carrito" className="cart__container">
               {cart.map((item,index)=>(
                 <>
@@ -173,7 +163,7 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
               <h2>Total: ${cartSum(cart).toLocaleString("es-ES")}</h2>
               <Flex gap="small" vertical>
                 <Button onClick={()=>setOpenMakeSaleModal(true)} disabled={cart.length === 0}>Concretar venta</Button>
-                <Button disabled={cart.length === 0}>Borrar carrito</Button>
+                <Button disabled={cart.length === 0} onClick={()=> setCart([])}>Borrar carrito</Button>
               </Flex>
             </Card>
           </Col>
@@ -202,7 +192,7 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
             <Link to="">Inicio</Link>
           </Menu.Item>
           <Menu.Item key="2" className="manu__item">
-            <Link to="stock&categories">Stock y categorías</Link>
+            <Link to="stock">Stock</Link>
           </Menu.Item>
           <Menu.Item key="3" className="manu__item">
             <Link to="providers">Proveedores</Link>
@@ -244,7 +234,7 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
             <Link to="">Inicio</Link> 
           </Menu.Item>
           <Menu.Item key="2" className="manu__item">
-            <Link to="stock&categories">Stock y categorías</Link>
+            <Link to="stock">Stock</Link>
           </Menu.Item>
           <Menu.Item key="3" className="manu__item">
             <Link to="providers">Proveedores</Link>
@@ -258,10 +248,11 @@ const [openMakeSaleModal, setOpenMakeSaleModal] = useState(false)
         </Menu>
       </Drawer>
 
-      <Content style={{ padding: "0 50px" }}>
+      <Content >
         <Routes>
           <Route path="/" element={renderMainComponent()} /> 
-          <Route path="stock&categories" element={<StockAndCategoriesManager />} />
+          <Route path="stock" element={<StockManager />} />
+          <Route path="providers" element={<ProvidersManager/>}/>
         </Routes>
       </Content>
       {openSetterQuantityModal && <SetQuantityModal closeModal={()=> setOpenSetterQuantityModal(false)} selectedProduct={selectedProduct}/>}
