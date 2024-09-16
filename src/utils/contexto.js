@@ -14,6 +14,7 @@ import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { config } from "../config";
 export const AppContext = createContext();
 
 export const useAppContext = () => {
@@ -36,17 +37,18 @@ export const AppContextProvider = ({ children }) => {
     access_token: null,
   });
   const [clientes,setClientes] = useState([])
-  const [deuda_clientes, setDeudaClientes] = useState([])
-  const [vistaProductos, setVistaProductos] = useState([])
-  const [vistaVentas, setVistaVentas] = useState([])
+  const [productos,setProductos] = useState([])
+  const [proveedores,setProveedores] = useState([])
+  const [ventas,setVentas] = useState([])
   const [cart, setCart] = useState([])
+
 
   const loginUser = async (values) => {
     const hiddenMessage = message.loading("Aguarde...");
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/verify-auth-user",
+        `${config.apiBaseUrl}/verify-auth-user`,
         { email: values.email }
       );
       if (response.status === 404) {
@@ -112,7 +114,7 @@ export const AppContextProvider = ({ children }) => {
         const email = session.user.email;
 
         const response = await axios.post(
-          "http://localhost:4000/verify-auth-user",
+          `${config.apiBaseUrl}/verify-auth-user`,
           { email }
         );
         const { admin, default_user } = response.data;
@@ -142,13 +144,13 @@ export const AppContextProvider = ({ children }) => {
   const fetchAllResources = async() => {
     const hiddenMessage = message.loading("Aguarde...",0)
     try {
-        const response = await axios.get("http://localhost:4000/fetch-all-resources")
+        const response = await axios.get(`${config.apiBaseUrl}/fetch-all-resources`)
         if (response.status === 200) {
             hiddenMessage()
-            setClientes(response.data.clientes)
-            setDeudaClientes(response.data.deuda_clientes)
-            setVistaProductos(response.data.vista_productos)
-            setVistaVentas(response.data.vista_ventas)
+            setClientes(response.data.clientes);
+            setProductos(response.data.productos);
+            setProveedores(response.data.proveedores);
+            setVentas(response.data.ventas);
         }else{
             message.error(`${response.data.message}`)
         }
@@ -163,6 +165,54 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
+  const addProvider = async(provider) => {
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/add-provider`, {provider})
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        return 200;
+      }else{
+        message.error(`${response.data.message}`,3)
+        return;
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
+      return
+    }
+  }
+
+  const updateProvider = async(provider,idProveedor) => {
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.put(`${config.apiBaseUrl}/edit-provider?id_proveedor=${idProveedor}`, {provider})
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        return 200;
+      }else{
+        message.error(`${response.data.message}`,3)
+        return;
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
+      return
+    }
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -172,11 +222,13 @@ export const AppContextProvider = ({ children }) => {
         userInfo,
         fetchAllResources,
         clientes,
-        deuda_clientes,
-        vistaProductos,
-        vistaVentas,
+        productos,
+        proveedores,
+        ventas,
         cart, 
-        setCart
+        setCart,
+        addProvider,
+        updateProvider
       }}
     >
       {children}
