@@ -4,12 +4,13 @@
 
 .sales__container{
     overflow-y: scroll;
-    max-height: 60vh;
+    min-height: 50vh;
+    width: 100%;
 }
 
 .cart__container{
     overflow-y: scroll;
-    max-height: 42vh;
+    min-height: 60vh;
 }
 
 @media (max-width: 800px) {
