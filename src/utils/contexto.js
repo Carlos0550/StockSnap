@@ -41,7 +41,8 @@ export const AppContextProvider = ({ children }) => {
   const [proveedores,setProveedores] = useState([])
   const [ventas,setVentas] = useState([])
   const [cart, setCart] = useState([])
-
+  const [activeTabProviders, setActiveTabProviders] = useState("1");
+  const [activeTabStock, setActiveTabStock] = useState("1")
 
   const loginUser = async (values) => {
     const hiddenMessage = message.loading("Aguarde...");
@@ -172,6 +173,8 @@ export const AppContextProvider = ({ children }) => {
       hiddenMessage()
       if (response.status === 200) {
         message.success(`${response.data.message}`)
+        fetchAllResources()
+
         return 200;
       }else{
         message.error(`${response.data.message}`,3)
@@ -196,6 +199,8 @@ export const AppContextProvider = ({ children }) => {
       hiddenMessage()
       if (response.status === 200) {
         message.success(`${response.data.message}`)
+        fetchAllResources()
+
         return 200;
       }else{
         message.error(`${response.data.message}`,3)
@@ -210,6 +215,52 @@ export const AppContextProvider = ({ children }) => {
         message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
       }
       return
+    }
+  }
+
+  const deleteProvider = async(ID) => {
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.delete(`${config.apiBaseUrl}/delete-provider?id_proveedor=${ID}`)
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        fetchAllResources()
+      }else{
+        message.error(`${response.data.message}`,3)
+       
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
+    }
+  }
+
+  const addStock = async(product) =>{
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/add-stock`,{product})
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        fetchAllResources()
+      }else{
+        message.error(`${response.data.message}`,3)
+       
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
     }
   }
 
@@ -228,7 +279,11 @@ export const AppContextProvider = ({ children }) => {
         cart, 
         setCart,
         addProvider,
-        updateProvider
+        updateProvider,
+        deleteProvider,
+        activeTabProviders, setActiveTabProviders,
+        activeTabStock, setActiveTabStock,
+        addStock
       }}
     >
       {children}
