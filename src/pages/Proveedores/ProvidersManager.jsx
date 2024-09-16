@@ -1,38 +1,44 @@
-import { Button, Card, Flex, Table, Tabs } from 'antd';
+import { Button, Card, Flex, Popconfirm, Table, Tabs } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../utils/contexto';
-import { processProvidersData } from './utils/processProvidersData';
-import AddProvider from './Modales/AñadirProveedor/AddProvider';
-import "./css/providersManager.css";
+import { processProvidersData } from '../../utils/processProvidersData';
+import AddProvider from './AñadirProveedor/AddProvider';
+import "./css/providersManager.css"
 import Edit from '../../utils/SVGs/Edit';
 import DeleteIcon from '../../utils/SVGs/DeleteIcon';
 
 function ProvidersManager() {
-  const { proveedores } = useAppContext();
+  const { proveedores,deleteProvider,activeTabProviders, setActiveTabProviders } = useAppContext();
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [editingProvider, setEditingProvider] = useState(false);
   const [ID_provider, setID_provider]= useState(null)
-  const [activeTab, setActiveTab] = useState("1");
-
+  const [deletingProvider, setDeletingProvider] = useState(false)
   const processedProviders = processProvidersData(proveedores);
 
   const handleEdit = (ID) => {
     setSelectedProvider(processedProviders.find(prov => prov.idProveedor === ID));
     setID_provider(ID)
     setEditingProvider(true);
-    setActiveTab("2");
+    setActiveTabProviders("2");
   };
 
+  const handleDeleteProvider = async(ID) =>{
+    setID_provider(ID)
+    setDeletingProvider(true)
+    await deleteProvider(ID)
+    setDeletingProvider(false)
+  }
+
   const handleTabChange = (key) => {
-    setActiveTab(key);
+    setActiveTabProviders(key);
   };
 
   useEffect(() => {
-    if (activeTab === "1") {
+    if (activeTabProviders === "1") {
       setSelectedProvider(null);
       setEditingProvider(false)
     }
-  }, [activeTab, editingProvider]);
+  }, [activeTabProviders, editingProvider]);
 
   const tableColumns = [
     {
@@ -81,7 +87,18 @@ function ProvidersManager() {
       render: (_,record) => (
         <Flex gap="small" wrap>
           <Button type='primary' onClick={() => handleEdit(record.idProveedor)}><Edit/></Button>
-          <Button type='primary' danger><DeleteIcon/></Button>
+          <Popconfirm 
+          title="¿Está seguro de hacer esto?"
+          description="Esta acción no tiene vuelta atras, y todos los productos asociados a este proveedor serán desvinculados"
+          okButtonProps={[
+            {
+              loading: deletingProvider
+            }
+          ]}
+          onConfirm={()=> handleDeleteProvider(record.idProveedor)}
+          >
+            <Button type='primary' danger><DeleteIcon/></Button>
+          </Popconfirm>
         </Flex>
       )
     }
@@ -111,7 +128,7 @@ function ProvidersManager() {
     <div className="providerManager__wrapper">
       <Card title="Proveedores" style={{minWidth:"100%"}}>
         <Tabs
-          activeKey={activeTab}
+          activeKey={activeTabProviders}
           onChange={handleTabChange}
           items={tabItems}
           destroyInactiveTabPane
