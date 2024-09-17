@@ -264,6 +264,29 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
+  const updateStock = async(product, id) =>{
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.put(`${config.apiBaseUrl}/update-stock?id_product=${id}`,{product})
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        fetchAllResources()
+      }else{
+        message.error(`${response.data.message}`,3)
+       
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
+    }
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -283,7 +306,7 @@ export const AppContextProvider = ({ children }) => {
         deleteProvider,
         activeTabProviders, setActiveTabProviders,
         activeTabStock, setActiveTabStock,
-        addStock
+        addStock,updateStock
       }}
     >
       {children}
