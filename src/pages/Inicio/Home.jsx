@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../utils/contexto";
-import { processDataSales } from "./processDataSales";
+import { processDataSales } from "../../utils/processDataSales";
 import {
   LogoutOutlined,
   MenuOutlined,
@@ -26,10 +26,9 @@ import "./home.css";
 import { Link, Route, Routes } from "react-router-dom";
 import Search from "antd/es/transfer/search";
 import SetQuantityModal from "./Modales/Seteador de Cantidad/SetQuantityModal";
-import { cartSum } from "./processDataSales";
+import { cartSum } from "../../utils/processDataSales";
 import MakeSale from "./Modales/Concretar Venta/MakeSale";
-import Stock from "../../utils/StockManager";
-import StockManager from "../../utils/StockManager";
+import StockManager from "../Stock/StockManager";
 import ProvidersManager from "../Proveedores/ProvidersManager";
 const { Header, Content } = Layout;
 

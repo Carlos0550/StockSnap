@@ -5,7 +5,7 @@ import { PagoDinero } from '../../../../utils/SVGs/PagoDinero'
 import { CreditCard } from '../../../../utils/SVGs/CreditCard'
 import { Transaction } from '../../../../utils/SVGs/Transaction'
 import {useAppContext} from "../../../../utils/contexto"
-import { cartSum } from '../../processDataSales'
+import { cartSum } from '../../../../utils/processDataSales'
 import axios from 'axios'
 function MakeSale({closeModal}) {
   const { cart,getFullDate, setCart } = useAppContext()
