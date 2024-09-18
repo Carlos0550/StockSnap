@@ -6,7 +6,7 @@ import { processProvidersData } from '../../../utils/processProvidersData';
 const { Option } = Select;
 
 function AddStock({editing, selectedProduct}) {
-  const { proveedores,addStock,updateStock, setActiveTabStock } = useAppContext();
+  const { proveedores,addStock,updateProduct, setActiveTabStock } = useAppContext();
   const [api, contextHolder] = notification.useNotification();
   const processedProviders = processProvidersData(proveedores);
   const [savingProduct, setSavingProduct] = useState(false)
@@ -14,7 +14,7 @@ function AddStock({editing, selectedProduct}) {
 
   const handleSaveProduct = async(values) => {
     setSavingProduct(true)
-    editing ? await updateStock(values, selectedProduct.id) : await addStock(values)
+    editing ? await updateProduct(values, selectedProduct.id) : await addStock(values)
     setSavingProduct(false)
     form.resetFields()
     setActiveTabStock("1")
@@ -59,9 +59,7 @@ function AddStock({editing, selectedProduct}) {
     openNotification('error', label);
   };
 
-  const handleProviderChange = (value) => {
-    console.log('Proveedor seleccionado:', value); 
-  };
+  
 
   return (
     <>
@@ -127,7 +125,6 @@ function AddStock({editing, selectedProduct}) {
           >
             <Select
               placeholder="Seleccione un proveedor"
-              onChange={handleProviderChange}
               style={{ width: '100%' }}
               allowClear
             >

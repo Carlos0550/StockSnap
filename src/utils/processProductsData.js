@@ -16,7 +16,7 @@ export const processProductData = (products, providers) => {
             precio: parseFloat(item.precio_unitario),
             stock: parseInt(item.stock),
             descripcion: cortarString(item.descripcion, 60) || "N/A",
-            proveedor: processedProviders.find(p => p.idProveedor === item.id_proveedor).nombre,
+            proveedor: processedProviders.find(p => p.idProveedor === item.id_proveedor)?.nombre ,
             id_proveedor: item.id_proveedor
         }))
     }else{

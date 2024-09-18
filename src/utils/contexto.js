@@ -36,7 +36,6 @@ export const AppContextProvider = ({ children }) => {
     id: null,
     access_token: null,
   });
-  const [clientes,setClientes] = useState([])
   const [productos,setProductos] = useState([])
   const [proveedores,setProveedores] = useState([])
   const [ventas,setVentas] = useState([])
@@ -148,7 +147,6 @@ export const AppContextProvider = ({ children }) => {
         const response = await axios.get(`${config.apiBaseUrl}/fetch-all-resources`)
         if (response.status === 200) {
             hiddenMessage()
-            setClientes(response.data.clientes);
             setProductos(response.data.productos);
             setProveedores(response.data.proveedores);
             setVentas(response.data.ventas);
@@ -264,7 +262,33 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
-  const updateStock = async(product, id) =>{
+  const deleteStock = async(ID) =>{
+    const hiddenMessage = message.loading("Aguarde...",0)
+    try {
+      const response = await axios.post(`${config.apiBaseUrl}/delete-stock?id_product=${ID}`)
+      hiddenMessage()
+      if (response.status === 200) {
+        message.success(`${response.data.message}`)
+        fetchAllResources()
+      }else{
+        message.error(`${response.data.message}`,3)
+       
+      }
+    } catch (error) {
+      hiddenMessage()
+      console.log(error)
+      if (error.response) {
+        message.error(`${error.response.data.message}`,3)
+      }else{
+        message.error("Error de conexión, verifica tu internet e intenta nuevamente",3)
+      }
+    }
+  }
+
+
+  
+
+  const updateProduct = async(product, id) =>{
     const hiddenMessage = message.loading("Aguarde...",0)
     try {
       const response = await axios.put(`${config.apiBaseUrl}/update-stock?id_product=${id}`,{product})
@@ -287,6 +311,7 @@ export const AppContextProvider = ({ children }) => {
     }
   }
 
+
   return (
     <AppContext.Provider
       value={{
@@ -295,7 +320,6 @@ export const AppContextProvider = ({ children }) => {
         checkSession,
         userInfo,
         fetchAllResources,
-        clientes,
         productos,
         proveedores,
         ventas,
@@ -306,7 +330,7 @@ export const AppContextProvider = ({ children }) => {
         deleteProvider,
         activeTabProviders, setActiveTabProviders,
         activeTabStock, setActiveTabStock,
-        addStock,updateStock
+        addStock,updateProduct,deleteStock
       }}
     >
       {children}

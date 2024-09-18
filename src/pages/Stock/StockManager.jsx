@@ -1,17 +1,18 @@
 import React,{ useEffect, useState, useRef } from 'react'
 import { useAppContext } from '../../utils/contexto'
-import { Button, Card, Empty, Flex, Table, Tabs } from 'antd'
+import { Button, Card, Empty, Flex, Popconfirm, Table, Tabs } from 'antd'
 import AddStock from './AñadirStock/AddStock'
 import { columnItemsProducts, processProductData } from '../../utils/processProductsData'
 import Edit from '../../utils/SVGs/Edit'
 import DeleteIcon from '../../utils/SVGs/DeleteIcon'
 
 function StockManager() {
-  const { activeTabStock, setActiveTabStock } = useAppContext()
+  const { activeTabStock, setActiveTabStock,deleteStock } = useAppContext()
   const { productos, proveedores } = useAppContext()
   const processedProducts = processProductData(productos,proveedores)
   const [selectedProduct, setSelectedProduct] = useState([])
   const [editingProduct, setEditingProduct] = useState(false)
+  const [deletingProduct, setDeletingProduct] = useState(false)
   const handleChangeTab = (key) => {
     setActiveTabStock(key)
   }
@@ -22,6 +23,12 @@ const handleEditProduct = (ID) => {
   console.log(selectedProduct)
   setEditingProduct(true)
   setActiveTabStock("2")
+} 
+
+const handleDeleteProduct = async(ID) => {
+  setDeletingProduct(true)
+  await deleteStock(ID)
+  setDeletingProduct(false)
 } 
 
 const columnItemsProducts = [
@@ -58,7 +65,20 @@ const columnItemsProducts = [
         render: (_,record) => (
             <Flex gap={"middle"}>
                 <Button type="primary" onClick={()=> handleEditProduct(record.id)}><Edit/></Button>
-                <Button type="primary" danger><DeleteIcon/></Button>
+                <Popconfirm
+                title="¿Está seguro que desea eliminar el producto?"
+                cancelText="Cancelar"
+                okText="Eliminar"
+                okType='danger'
+                description="Esta acción no se puede deshacer"
+                okButtonProps={[
+                  {loading: deletingProduct, type: "primary"}
+                  
+                ]}
+                onConfirm={()=> handleDeleteProduct(record.id)}
+                >
+                  <Button type="primary" danger><DeleteIcon/></Button>
+                </Popconfirm>
             </Flex>
         )
     },
